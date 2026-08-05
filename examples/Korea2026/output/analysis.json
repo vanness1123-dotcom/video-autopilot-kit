@@ -1,0 +1,1701 @@
+{
+  "trip_folder": "C:\\AI-Lab\\Projects\\video-autopilot-kit\\examples\\Korea2026",
+  "generated_at": "2026-08-05T07:33:36.681122+00:00",
+  "summary": {
+    "total_photos": 202,
+    "total_videos": 37,
+    "total_size_bytes": 3411035959,
+    "gps_available": false,
+    "date_range_start": "2026-07-24",
+    "date_range_end": "2026-07-29"
+  },
+  "folder_structure": [
+    {
+      "path": "Photos",
+      "photos": 202,
+      "videos": 0,
+      "size_bytes": 742781956
+    },
+    {
+      "path": "Videos",
+      "photos": 0,
+      "videos": 37,
+      "size_bytes": 2668254003
+    }
+  ],
+  "media": [
+    {
+      "path": "Photos/AVCO6974.JPEG",
+      "kind": "photo",
+      "size_bytes": 392233,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/AYCX2278.JPEG",
+      "kind": "photo",
+      "size_bytes": 558203,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/DFER3404.JPEG",
+      "kind": "photo",
+      "size_bytes": 382788,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/EMAW1021.JPEG",
+      "kind": "photo",
+      "size_bytes": 366040,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/EQZI7722.JPEG",
+      "kind": "photo",
+      "size_bytes": 505220,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/ETKM2010.JPEG",
+      "kind": "photo",
+      "size_bytes": 352828,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/HTBH7680.JPEG",
+      "kind": "photo",
+      "size_bytes": 452983,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IIKF9287.JPEG",
+      "kind": "photo",
+      "size_bytes": 531780,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0236.JPG",
+      "kind": "photo",
+      "size_bytes": 6300645,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0237.JPG",
+      "kind": "photo",
+      "size_bytes": 5757547,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0242.JPG",
+      "kind": "photo",
+      "size_bytes": 5882055,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0243.JPG",
+      "kind": "photo",
+      "size_bytes": 4284492,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0244.JPG",
+      "kind": "photo",
+      "size_bytes": 4886350,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0245.JPG",
+      "kind": "photo",
+      "size_bytes": 5549269,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0246.JPG",
+      "kind": "photo",
+      "size_bytes": 4358164,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0247.JPG",
+      "kind": "photo",
+      "size_bytes": 6306580,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0249.JPG",
+      "kind": "photo",
+      "size_bytes": 8161254,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0251.JPG",
+      "kind": "photo",
+      "size_bytes": 5110667,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0253.JPG",
+      "kind": "photo",
+      "size_bytes": 3189916,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0254.JPG",
+      "kind": "photo",
+      "size_bytes": 2989924,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0256.JPG",
+      "kind": "photo",
+      "size_bytes": 3170337,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0260.JPG",
+      "kind": "photo",
+      "size_bytes": 6440929,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0261.JPG",
+      "kind": "photo",
+      "size_bytes": 6302276,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0262.JPG",
+      "kind": "photo",
+      "size_bytes": 6422619,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0263.JPG",
+      "kind": "photo",
+      "size_bytes": 6450417,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0264.JPG",
+      "kind": "photo",
+      "size_bytes": 6476587,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0265.JPG",
+      "kind": "photo",
+      "size_bytes": 6402433,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0268.JPG",
+      "kind": "photo",
+      "size_bytes": 6033410,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0270.JPG",
+      "kind": "photo",
+      "size_bytes": 5007794,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0271.JPG",
+      "kind": "photo",
+      "size_bytes": 5104397,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0272.JPG",
+      "kind": "photo",
+      "size_bytes": 4803556,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0273.JPG",
+      "kind": "photo",
+      "size_bytes": 4905167,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0275.JPG",
+      "kind": "photo",
+      "size_bytes": 7170913,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0276.JPG",
+      "kind": "photo",
+      "size_bytes": 6958831,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0277.JPG",
+      "kind": "photo",
+      "size_bytes": 5685585,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0279.JPG",
+      "kind": "photo",
+      "size_bytes": 2839635,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0280.HEIC",
+      "kind": "photo",
+      "size_bytes": 1004993,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0283.JPG",
+      "kind": "photo",
+      "size_bytes": 2061857,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0285.JPG",
+      "kind": "photo",
+      "size_bytes": 2075217,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0286.JPG",
+      "kind": "photo",
+      "size_bytes": 2864251,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0288.JPG",
+      "kind": "photo",
+      "size_bytes": 4543154,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0289.JPG",
+      "kind": "photo",
+      "size_bytes": 4511052,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0290.JPG",
+      "kind": "photo",
+      "size_bytes": 4435084,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0291.JPG",
+      "kind": "photo",
+      "size_bytes": 5066615,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0292.JPG",
+      "kind": "photo",
+      "size_bytes": 5221999,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0293.JPG",
+      "kind": "photo",
+      "size_bytes": 4672352,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0294.JPG",
+      "kind": "photo",
+      "size_bytes": 4971506,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0295.JPG",
+      "kind": "photo",
+      "size_bytes": 5273581,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0297.JPG",
+      "kind": "photo",
+      "size_bytes": 6346087,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0298.JPG",
+      "kind": "photo",
+      "size_bytes": 5617595,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0300.JPG",
+      "kind": "photo",
+      "size_bytes": 5911785,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0301.JPG",
+      "kind": "photo",
+      "size_bytes": 5567235,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0302.JPG",
+      "kind": "photo",
+      "size_bytes": 4164185,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0303.JPG",
+      "kind": "photo",
+      "size_bytes": 6726590,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0304.JPG",
+      "kind": "photo",
+      "size_bytes": 3800426,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0306.JPG",
+      "kind": "photo",
+      "size_bytes": 5219561,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0307.JPG",
+      "kind": "photo",
+      "size_bytes": 4743043,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0308.JPG",
+      "kind": "photo",
+      "size_bytes": 5560663,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0309.JPG",
+      "kind": "photo",
+      "size_bytes": 5997000,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0310.JPG",
+      "kind": "photo",
+      "size_bytes": 4552969,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0311.JPG",
+      "kind": "photo",
+      "size_bytes": 5141010,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0312.JPG",
+      "kind": "photo",
+      "size_bytes": 5896278,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0313.JPG",
+      "kind": "photo",
+      "size_bytes": 5493755,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0314.JPG",
+      "kind": "photo",
+      "size_bytes": 4909245,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0316.JPG",
+      "kind": "photo",
+      "size_bytes": 3064253,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0317.JPG",
+      "kind": "photo",
+      "size_bytes": 5487042,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0318.JPG",
+      "kind": "photo",
+      "size_bytes": 2869333,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0319.JPG",
+      "kind": "photo",
+      "size_bytes": 5440789,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0320.JPG",
+      "kind": "photo",
+      "size_bytes": 4645970,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0321.JPG",
+      "kind": "photo",
+      "size_bytes": 6430410,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0322.JPG",
+      "kind": "photo",
+      "size_bytes": 6679034,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0323.JPG",
+      "kind": "photo",
+      "size_bytes": 5163578,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0324.JPG",
+      "kind": "photo",
+      "size_bytes": 4159825,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0327.JPG",
+      "kind": "photo",
+      "size_bytes": 4468069,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0328.JPG",
+      "kind": "photo",
+      "size_bytes": 3916497,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0329.JPG",
+      "kind": "photo",
+      "size_bytes": 4102449,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0330.JPG",
+      "kind": "photo",
+      "size_bytes": 5520379,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0331.JPG",
+      "kind": "photo",
+      "size_bytes": 6533837,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0332.JPG",
+      "kind": "photo",
+      "size_bytes": 4994441,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0334.JPG",
+      "kind": "photo",
+      "size_bytes": 4544639,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0335.JPG",
+      "kind": "photo",
+      "size_bytes": 5196491,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0336.JPG",
+      "kind": "photo",
+      "size_bytes": 6588395,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0337.JPG",
+      "kind": "photo",
+      "size_bytes": 6229300,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0339.JPG",
+      "kind": "photo",
+      "size_bytes": 1100146,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0340.HEIC",
+      "kind": "photo",
+      "size_bytes": 1532954,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0341.HEIC",
+      "kind": "photo",
+      "size_bytes": 1890983,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0342.HEIC",
+      "kind": "photo",
+      "size_bytes": 1277462,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0343.HEIC",
+      "kind": "photo",
+      "size_bytes": 1220185,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0344.HEIC",
+      "kind": "photo",
+      "size_bytes": 918156,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0345.HEIC",
+      "kind": "photo",
+      "size_bytes": 1179082,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0346.HEIC",
+      "kind": "photo",
+      "size_bytes": 1003184,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0347.HEIC",
+      "kind": "photo",
+      "size_bytes": 951496,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0348.HEIC",
+      "kind": "photo",
+      "size_bytes": 1002162,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0349.JPG",
+      "kind": "photo",
+      "size_bytes": 5278637,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0350.JPG",
+      "kind": "photo",
+      "size_bytes": 1144459,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0352.JPG",
+      "kind": "photo",
+      "size_bytes": 3673720,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0353.JPG",
+      "kind": "photo",
+      "size_bytes": 5002257,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0361.JPG",
+      "kind": "photo",
+      "size_bytes": 5174787,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0363.JPG",
+      "kind": "photo",
+      "size_bytes": 293972,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0364.JPG",
+      "kind": "photo",
+      "size_bytes": 4155936,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0369.JPG",
+      "kind": "photo",
+      "size_bytes": 4407829,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0370.JPG",
+      "kind": "photo",
+      "size_bytes": 4735700,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0371.JPG",
+      "kind": "photo",
+      "size_bytes": 4090369,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0376.JPG",
+      "kind": "photo",
+      "size_bytes": 3646947,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0378.JPG",
+      "kind": "photo",
+      "size_bytes": 4373116,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0381.JPG",
+      "kind": "photo",
+      "size_bytes": 2164897,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0382.JPG",
+      "kind": "photo",
+      "size_bytes": 8071393,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0384.JPG",
+      "kind": "photo",
+      "size_bytes": 4789039,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0385.JPG",
+      "kind": "photo",
+      "size_bytes": 2077737,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0388.JPG",
+      "kind": "photo",
+      "size_bytes": 6965975,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0389.JPG",
+      "kind": "photo",
+      "size_bytes": 7075113,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0390.JPG",
+      "kind": "photo",
+      "size_bytes": 7141205,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0391.JPG",
+      "kind": "photo",
+      "size_bytes": 3804997,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0392.JPG",
+      "kind": "photo",
+      "size_bytes": 7579646,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0393.JPG",
+      "kind": "photo",
+      "size_bytes": 7805628,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0394.JPG",
+      "kind": "photo",
+      "size_bytes": 3433125,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0396.JPG",
+      "kind": "photo",
+      "size_bytes": 4754656,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0397.JPG",
+      "kind": "photo",
+      "size_bytes": 3009677,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0398.JPG",
+      "kind": "photo",
+      "size_bytes": 5614739,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0402.JPG",
+      "kind": "photo",
+      "size_bytes": 2624594,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0403.JPG",
+      "kind": "photo",
+      "size_bytes": 5544190,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0406.JPG",
+      "kind": "photo",
+      "size_bytes": 5424265,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0407.JPG",
+      "kind": "photo",
+      "size_bytes": 6930283,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0408.JPG",
+      "kind": "photo",
+      "size_bytes": 4865514,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0409.JPG",
+      "kind": "photo",
+      "size_bytes": 2563088,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0410.JPG",
+      "kind": "photo",
+      "size_bytes": 1114364,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0411.JPG",
+      "kind": "photo",
+      "size_bytes": 6158656,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0412.JPG",
+      "kind": "photo",
+      "size_bytes": 6129908,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0413.JPG",
+      "kind": "photo",
+      "size_bytes": 5440509,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0414.JPG",
+      "kind": "photo",
+      "size_bytes": 5903466,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0415.JPG",
+      "kind": "photo",
+      "size_bytes": 4843325,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0416.JPG",
+      "kind": "photo",
+      "size_bytes": 5081198,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0417.JPG",
+      "kind": "photo",
+      "size_bytes": 3254444,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0418.JPG",
+      "kind": "photo",
+      "size_bytes": 4265466,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0419.JPG",
+      "kind": "photo",
+      "size_bytes": 4249912,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0420.JPG",
+      "kind": "photo",
+      "size_bytes": 1642315,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0421.JPG",
+      "kind": "photo",
+      "size_bytes": 3500478,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0422.JPG",
+      "kind": "photo",
+      "size_bytes": 1507903,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0423.JPG",
+      "kind": "photo",
+      "size_bytes": 1924562,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0424.JPG",
+      "kind": "photo",
+      "size_bytes": 12483403,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0427.JPG",
+      "kind": "photo",
+      "size_bytes": 6000634,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0428.JPG",
+      "kind": "photo",
+      "size_bytes": 6864163,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0429.JPG",
+      "kind": "photo",
+      "size_bytes": 6708038,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0430.JPG",
+      "kind": "photo",
+      "size_bytes": 6981386,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0431.JPG",
+      "kind": "photo",
+      "size_bytes": 7041551,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0432.JPG",
+      "kind": "photo",
+      "size_bytes": 6914112,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0433.JPG",
+      "kind": "photo",
+      "size_bytes": 3719490,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0434.JPG",
+      "kind": "photo",
+      "size_bytes": 3654363,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0436.JPG",
+      "kind": "photo",
+      "size_bytes": 3148966,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0440.JPG",
+      "kind": "photo",
+      "size_bytes": 5618859,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0441.JPG",
+      "kind": "photo",
+      "size_bytes": 4708028,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0442.JPG",
+      "kind": "photo",
+      "size_bytes": 3967684,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0443.JPG",
+      "kind": "photo",
+      "size_bytes": 5384994,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0444.JPG",
+      "kind": "photo",
+      "size_bytes": 5266923,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0445.JPG",
+      "kind": "photo",
+      "size_bytes": 5034205,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0450.JPG",
+      "kind": "photo",
+      "size_bytes": 5513073,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0451.JPG",
+      "kind": "photo",
+      "size_bytes": 5578366,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0452.JPG",
+      "kind": "photo",
+      "size_bytes": 5164546,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0455.JPG",
+      "kind": "photo",
+      "size_bytes": 2815405,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0456.JPG",
+      "kind": "photo",
+      "size_bytes": 2620871,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0457.JPG",
+      "kind": "photo",
+      "size_bytes": 2690721,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0458.JPG",
+      "kind": "photo",
+      "size_bytes": 4406906,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0459.JPG",
+      "kind": "photo",
+      "size_bytes": 2627236,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0460.JPG",
+      "kind": "photo",
+      "size_bytes": 355681,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0461.JPG",
+      "kind": "photo",
+      "size_bytes": 341312,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0462.JPG",
+      "kind": "photo",
+      "size_bytes": 529852,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0463.JPG",
+      "kind": "photo",
+      "size_bytes": 358632,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0464.JPG",
+      "kind": "photo",
+      "size_bytes": 542977,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0466.JPG",
+      "kind": "photo",
+      "size_bytes": 444034,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0467.JPG",
+      "kind": "photo",
+      "size_bytes": 444035,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0471.JPG",
+      "kind": "photo",
+      "size_bytes": 489769,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0472.JPG",
+      "kind": "photo",
+      "size_bytes": 420618,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0473.JPG",
+      "kind": "photo",
+      "size_bytes": 413797,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0475.JPG",
+      "kind": "photo",
+      "size_bytes": 330982,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0476.JPG",
+      "kind": "photo",
+      "size_bytes": 403366,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0477.JPG",
+      "kind": "photo",
+      "size_bytes": 293118,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0478.JPG",
+      "kind": "photo",
+      "size_bytes": 562937,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0479.JPG",
+      "kind": "photo",
+      "size_bytes": 623907,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0486.JPG",
+      "kind": "photo",
+      "size_bytes": 421860,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0487.JPG",
+      "kind": "photo",
+      "size_bytes": 429536,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0488.JPG",
+      "kind": "photo",
+      "size_bytes": 446866,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0491.JPG",
+      "kind": "photo",
+      "size_bytes": 427083,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0533.JPG",
+      "kind": "photo",
+      "size_bytes": 416944,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0534.JPG",
+      "kind": "photo",
+      "size_bytes": 517488,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0535.JPG",
+      "kind": "photo",
+      "size_bytes": 432841,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0536.JPG",
+      "kind": "photo",
+      "size_bytes": 478553,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0538.JPG",
+      "kind": "photo",
+      "size_bytes": 463641,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0539.JPG",
+      "kind": "photo",
+      "size_bytes": 501522,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0540.JPG",
+      "kind": "photo",
+      "size_bytes": 469630,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0541.JPG",
+      "kind": "photo",
+      "size_bytes": 506824,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0543.JPG",
+      "kind": "photo",
+      "size_bytes": 431671,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/IMG_0548.JPG",
+      "kind": "photo",
+      "size_bytes": 525396,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/KCQR2005.JPEG",
+      "kind": "photo",
+      "size_bytes": 446651,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/KEYU2747.JPEG",
+      "kind": "photo",
+      "size_bytes": 364801,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/KJHP0575.JPEG",
+      "kind": "photo",
+      "size_bytes": 597848,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/KKRY9203.JPEG",
+      "kind": "photo",
+      "size_bytes": 470797,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/KPKI1314.JPEG",
+      "kind": "photo",
+      "size_bytes": 426078,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/PGDJ6518.JPEG",
+      "kind": "photo",
+      "size_bytes": 574548,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/PNYM4036.JPEG",
+      "kind": "photo",
+      "size_bytes": 416384,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/RATL3860.JPEG",
+      "kind": "photo",
+      "size_bytes": 435326,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/WEFX5477.JPEG",
+      "kind": "photo",
+      "size_bytes": 497292,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Photos/XLYV5958.JPEG",
+      "kind": "photo",
+      "size_bytes": 425987,
+      "captured_at": null,
+      "gps": null
+    },
+    {
+      "path": "Videos/BIGT2604.MP4",
+      "kind": "video",
+      "size_bytes": 9319874,
+      "captured_at": "2026-07-26T14:45:54+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/BNPL6313.MP4",
+      "kind": "video",
+      "size_bytes": 1599429,
+      "captured_at": "2026-07-28T09:18:50+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/BXQV9469.MP4",
+      "kind": "video",
+      "size_bytes": 4145939,
+      "captured_at": "2026-07-28T03:17:49+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/CSVM2430.MP4",
+      "kind": "video",
+      "size_bytes": 4046092,
+      "captured_at": "2026-07-26T14:45:52+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/CTUS6037.MP4",
+      "kind": "video",
+      "size_bytes": 6248708,
+      "captured_at": "2026-07-26T14:45:45+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/EFVT7160.MP4",
+      "kind": "video",
+      "size_bytes": 5999962,
+      "captured_at": "2026-07-26T14:46:02+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/ETRK5172.MP4",
+      "kind": "video",
+      "size_bytes": 6791100,
+      "captured_at": "2026-07-27T05:00:50+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/FHCA2414.MP4",
+      "kind": "video",
+      "size_bytes": 6216260,
+      "captured_at": "2026-07-26T14:45:58+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/FVYT9302.MP4",
+      "kind": "video",
+      "size_bytes": 4986091,
+      "captured_at": "2026-07-28T03:17:45+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IGCX5872.MP4",
+      "kind": "video",
+      "size_bytes": 14833504,
+      "captured_at": "2026-07-27T08:22:47+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IMDK6203.MP4",
+      "kind": "video",
+      "size_bytes": 3010001,
+      "captured_at": "2026-07-26T14:45:44+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IMG_0248.MOV",
+      "kind": "video",
+      "size_bytes": 94201558,
+      "captured_at": "2026-07-24T07:13:50+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IMG_0287.MOV",
+      "kind": "video",
+      "size_bytes": 694001636,
+      "captured_at": "2026-07-25T05:00:03+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IMG_0326.MOV",
+      "kind": "video",
+      "size_bytes": 96921701,
+      "captured_at": "2026-07-26T02:15:52+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IMG_0368.MOV",
+      "kind": "video",
+      "size_bytes": 428630744,
+      "captured_at": "2026-07-27T06:46:22+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IMG_0372.MOV",
+      "kind": "video",
+      "size_bytes": 95468831,
+      "captured_at": "2026-07-27T07:07:57+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IMG_0373.MOV",
+      "kind": "video",
+      "size_bytes": 452076282,
+      "captured_at": "2026-07-27T07:09:09+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IMG_0374.MOV",
+      "kind": "video",
+      "size_bytes": 253267716,
+      "captured_at": "2026-07-27T07:47:03+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IMG_0375.MOV",
+      "kind": "video",
+      "size_bytes": 102134809,
+      "captured_at": "2026-07-27T07:47:55+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IMG_0383.MOV",
+      "kind": "video",
+      "size_bytes": 20866429,
+      "captured_at": "2026-07-27T10:03:07+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IMG_0399.MOV",
+      "kind": "video",
+      "size_bytes": 30753044,
+      "captured_at": "2026-07-27T15:31:11+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IMG_0404.MOV",
+      "kind": "video",
+      "size_bytes": 104532557,
+      "captured_at": "2026-07-28T02:36:30+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IMG_0405.MOV",
+      "kind": "video",
+      "size_bytes": 47242415,
+      "captured_at": "2026-07-28T02:37:23+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IMG_0425.MOV",
+      "kind": "video",
+      "size_bytes": 68198757,
+      "captured_at": "2026-07-28T04:27:06+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IMG_0426.MOV",
+      "kind": "video",
+      "size_bytes": 44405543,
+      "captured_at": "2026-07-28T04:39:45+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IUQR1198.MP4",
+      "kind": "video",
+      "size_bytes": 2217400,
+      "captured_at": "2026-07-26T14:45:51+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/IXCZ5411.MP4",
+      "kind": "video",
+      "size_bytes": 5903136,
+      "captured_at": "2026-07-28T03:17:46+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/JXOF5356.MP4",
+      "kind": "video",
+      "size_bytes": 4985898,
+      "captured_at": "2026-07-27T05:00:53+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/NLZO9489.MP4",
+      "kind": "video",
+      "size_bytes": 6743504,
+      "captured_at": "2026-07-26T14:45:48+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/OBFU6882.MP4",
+      "kind": "video",
+      "size_bytes": 2212601,
+      "captured_at": "2026-07-28T03:17:48+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/QMRV8096.MP4",
+      "kind": "video",
+      "size_bytes": 2021075,
+      "captured_at": "2026-07-27T05:00:55+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/QUJN5464.MP4",
+      "kind": "video",
+      "size_bytes": 5756543,
+      "captured_at": "2026-07-26T14:46:00+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/RIQE1935.MP4",
+      "kind": "video",
+      "size_bytes": 2377771,
+      "captured_at": "2026-07-26T14:45:47+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/SPGE8063.MP4",
+      "kind": "video",
+      "size_bytes": 3404653,
+      "captured_at": "2026-07-29T00:42:08+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/SVCN9521.MP4",
+      "kind": "video",
+      "size_bytes": 2821270,
+      "captured_at": "2026-07-28T03:17:49+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/VLNY2265.MP4",
+      "kind": "video",
+      "size_bytes": 7614751,
+      "captured_at": "2026-07-28T03:17:51+00:00",
+      "gps": null
+    },
+    {
+      "path": "Videos/WQJB7383.MP4",
+      "kind": "video",
+      "size_bytes": 22296419,
+      "captured_at": "2026-07-27T03:45:55+00:00",
+      "gps": null
+    }
+  ]
+}
