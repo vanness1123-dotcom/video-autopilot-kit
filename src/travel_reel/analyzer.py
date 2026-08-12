@@ -1,11 +1,12 @@
-﻿"""Recursive trip-media scanning and metadata extraction."""
+﻿"""Recursive trip-media scanning that produces canonical Trip objects."""
 from __future__ import annotations
 import struct
 from collections import defaultdict
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import BinaryIO
-from .models import AnalysisSummary, FolderSummary, GpsLocation, MediaFile, TripAnalysis
+from uuid import NAMESPACE_URL, uuid5
+from .models import FolderSummary, GpsLocation, Photo, Trip, Video
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".heic", ".webp"}
 VIDEO_EXTENSIONS = {".mp4", ".mov", ".m4v", ".avi"}
@@ -16,26 +17,25 @@ def detect_media_kind(path: Path) -> str | None:
     suffix = path.suffix.lower()
     return "photo" if suffix in IMAGE_EXTENSIONS else "video" if suffix in VIDEO_EXTENSIONS else None
 
-def analyze_trip_folder(trip_folder: Path) -> TripAnalysis:
-    """Scan a trip folder and collect supported media and metadata."""
+def analyze_trip_folder(trip_folder: Path) -> Trip:
+    """Scan a trip folder once and build its canonical domain object."""
     if not trip_folder.is_dir():
         raise NotADirectoryError(f"Trip folder does not exist or is not a directory: {trip_folder}")
-    media: list[MediaFile] = []
+    source_folder = trip_folder.resolve()
+    photos: list[Photo] = []; videos: list[Video] = []
     folders: dict[str, list[int]] = defaultdict(lambda: [0, 0, 0])
-    for path in sorted(trip_folder.rglob("*")):
-        if not path.is_file() or not (kind := detect_media_kind(path)):
-            continue
-        captured_at, gps = extract_metadata(path, kind)
-        parent = path.parent.relative_to(trip_folder).as_posix() or "."
-        size = path.stat().st_size
-        folders[parent][0 if kind == "photo" else 1] += 1
-        folders[parent][2] += size
-        media.append(MediaFile(path.relative_to(trip_folder).as_posix(), kind, size, captured_at, gps))
-    media.sort(key=lambda item: item.path)
-    dates = [item.captured_at.date().isoformat() for item in media if item.captured_at]
-    summary = AnalysisSummary(sum(item.kind == "photo" for item in media), sum(item.kind == "video" for item in media), sum(item.size_bytes for item in media), any(item.gps for item in media), min(dates) if dates else None, max(dates) if dates else None)
-    folder_summaries = [FolderSummary(path, counts[0], counts[1], counts[2]) for path, counts in sorted(folders.items())]
-    return TripAnalysis(str(trip_folder.resolve()), datetime.now(UTC), summary, folder_summaries, media)
+    for path in sorted(source_folder.rglob("*")):
+        if not path.is_file() or not (kind := detect_media_kind(path)): continue
+        capture_time, gps = extract_metadata(path, kind)
+        relative_path = path.relative_to(source_folder)
+        parent = relative_path.parent.as_posix() or "."
+        size = path.stat().st_size; folders[parent][0 if kind == "photo" else 1] += 1; folders[parent][2] += size
+        asset_id = f"{kind}-{uuid5(NAMESPACE_URL, f'{source_folder}/{relative_path.as_posix()}')}"
+        if kind == "photo": photos.append(Photo(asset_id, relative_path, path.name, capture_time=capture_time, gps=gps, size_bytes=size))
+        else: videos.append(Video(asset_id, relative_path, path.name, capture_time=capture_time, gps=gps, size_bytes=size))
+    folder_structure = [FolderSummary(path, counts[0], counts[1], counts[2]) for path, counts in sorted(folders.items())]
+    trip_id = f"trip-{uuid5(NAMESPACE_URL, str(source_folder))}"
+    return Trip(trip_id, source_folder.name, source_folder, photos, videos, metadata={"generated_at": datetime.now(UTC), "folder_structure": folder_structure})
 
 def extract_metadata(path: Path, kind: str) -> tuple[datetime | None, GpsLocation | None]:
     """Extract supported metadata without failing when it is absent."""
@@ -46,26 +46,20 @@ def extract_image_metadata(path: Path) -> tuple[datetime | None, GpsLocation | N
     try:
         from PIL import Image
         with Image.open(path) as image:
-            exif = image.getexif()
-            return _parse_exif_datetime(exif.get(36867)), _parse_gps(exif.get(34853))
-    except (ImportError, OSError, SyntaxError, ValueError, TypeError):
-        return None, None
+            exif = image.getexif(); return _parse_exif_datetime(exif.get(36867)), _parse_gps(exif.get(34853))
+    except (ImportError, OSError, SyntaxError, ValueError, TypeError): return None, None
 
 def extract_video_creation_time(path: Path) -> datetime | None:
     """Read QuickTime or ISO-BMFF movie-header creation time when present."""
-    if path.suffix.lower() == ".avi":
-        return None
+    if path.suffix.lower() == ".avi": return None
     try:
-        with path.open("rb") as stream:
-            return _find_movie_creation_time(stream, path.stat().st_size)
-    except (OSError, ValueError, struct.error):
-        return None
+        with path.open("rb") as stream: return _find_movie_creation_time(stream, path.stat().st_size)
+    except (OSError, ValueError, struct.error): return None
 
 def _find_movie_creation_time(stream: BinaryIO, limit: int, start: int = 0) -> datetime | None:
     position = start
     while position + 8 <= limit:
-        stream.seek(position)
-        header = stream.read(8)
+        stream.seek(position); header = stream.read(8)
         if len(header) != 8: return None
         size, box_type = struct.unpack(">I4s", header); header_size = 8
         if size == 1:
