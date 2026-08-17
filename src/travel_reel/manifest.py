@@ -1,9 +1,7 @@
 ﻿"""Canonical Trip Manifest construction from analyzer output."""
 from __future__ import annotations
 from dataclasses import asdict, dataclass
-from typing import Literal
-from uuid import NAMESPACE_URL, uuid5
-from .models import MediaFile, TripAnalysis
+from .models import Photo, Trip, Video
 
 @dataclass(frozen=True)
 class ManifestMedia:
@@ -53,22 +51,21 @@ class TripManifest:
             "render": self.render,
         }
 
-def build_trip_manifest(analysis: TripAnalysis) -> TripManifest:
+def build_trip_manifest(trip_state: Trip) -> TripManifest:
     """Derive the SSOT manifest from one completed analysis without rescanning files."""
-    photos = [_manifest_media(analysis, item) for item in analysis.media if item.kind == "photo"]
-    videos = [_manifest_media(analysis, item) for item in analysis.media if item.kind == "video"]
+    photos = [_manifest_media(item) for item in trip_state.photos]
+    videos = [_manifest_media(item) for item in trip_state.videos]
     trip = {
-        "name": analysis.trip_folder.rsplit("\\", 1)[-1].rsplit("/", 1)[-1],
-        "source_folder": analysis.trip_folder,
-        "generated_at": analysis.generated_at.isoformat(),
-        "summary": asdict(analysis.summary),
-        "folder_structure": [asdict(folder) for folder in analysis.folders],
+        "name": trip_state.name,
+        "source_folder": str(trip_state.source_folder),
+        "generated_at": trip_state.generated_at.isoformat(),
+        "summary": asdict(trip_state.summary),
+        "folder_structure": [asdict(folder) for folder in trip_state.folders],
     }
     return TripManifest("1.0", trip, photos, videos, [], {}, {}, {})
 
-def _manifest_media(analysis: TripAnalysis, item: MediaFile) -> ManifestMedia:
+def _manifest_media(item: Photo | Video) -> ManifestMedia:
     """Convert analyzer media to a deterministically identified manifest asset."""
-    asset_id = f"{item.kind}-{uuid5(NAMESPACE_URL, f'{analysis.trip_folder}/{item.path}')}"
     gps = asdict(item.gps) if item.gps else None
-    captured_at = item.captured_at.isoformat() if item.captured_at else None
-    return ManifestMedia(asset_id, item.path, item.size_bytes, captured_at, gps)
+    captured_at = item.capture_time.isoformat() if item.capture_time else None
+    return ManifestMedia(item.id, item.path.as_posix(), item.size_bytes, captured_at, gps)

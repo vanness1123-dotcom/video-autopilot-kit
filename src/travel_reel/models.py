@@ -91,6 +91,16 @@ class FolderSummary:
     videos: int
     size_bytes: int
 
+@dataclass(frozen=True)
+class TripSummary:
+    """Derived analyzer summary for CLI and analysis.json compatibility."""
+    total_photos: int
+    total_videos: int
+    total_size_bytes: int
+    gps_available: bool
+    date_range_start: str | None
+    date_range_end: str | None
+
 @dataclass
 class Trip:
     """Canonical in-memory project state shared by all future modules."""
@@ -103,3 +113,71 @@ class Trip:
     timeline: Timeline | None = None
     reel_plan: ReelPlan | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def folders(self) -> list[FolderSummary]:
+        """Return analyzer folder summaries stored with the canonical trip."""
+        return self.metadata.get("folder_structure", [])
+
+    @property
+    def generated_at(self) -> datetime:
+        """Return the timestamp captured by the analyzer."""
+        return self.metadata["generated_at"]
+
+    @property
+    def summary(self) -> TripSummary:
+        """Derive the stable Sprint 1 summary from canonical media objects."""
+        media = [*self.photos, *self.videos]
+        capture_dates = sorted(
+            item.capture_time.date().isoformat()
+            for item in media
+            if item.capture_time is not None
+        )
+        return TripSummary(
+            total_photos=len(self.photos),
+            total_videos=len(self.videos),
+            total_size_bytes=sum(item.size_bytes for item in media),
+            gps_available=any(item.gps is not None for item in media),
+            date_range_start=capture_dates[0] if capture_dates else None,
+            date_range_end=capture_dates[-1] if capture_dates else None,
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize the canonical trip using the Sprint 1 analysis.json schema."""
+        def media_item(item: Photo | Video, kind: str) -> dict[str, Any]:
+            return {
+                "path": item.path.as_posix(),
+                "kind": kind,
+                "size_bytes": item.size_bytes,
+                "captured_at": item.capture_time.isoformat() if item.capture_time else None,
+                "gps": {
+                    "latitude": item.gps.latitude,
+                    "longitude": item.gps.longitude,
+                } if item.gps else None,
+            }
+
+        return {
+            "trip_folder": str(self.source_folder),
+            "generated_at": self.generated_at.isoformat(),
+            "summary": {
+                "total_photos": self.summary.total_photos,
+                "total_videos": self.summary.total_videos,
+                "total_size_bytes": self.summary.total_size_bytes,
+                "gps_available": self.summary.gps_available,
+                "date_range_start": self.summary.date_range_start,
+                "date_range_end": self.summary.date_range_end,
+            },
+            "folder_structure": [
+                {
+                    "path": folder.path,
+                    "photos": folder.photos,
+                    "videos": folder.videos,
+                    "size_bytes": folder.size_bytes,
+                }
+                for folder in self.folders
+            ],
+            "media": [
+                *(media_item(item, "photo") for item in self.photos),
+                *(media_item(item, "video") for item in self.videos),
+            ],
+        }

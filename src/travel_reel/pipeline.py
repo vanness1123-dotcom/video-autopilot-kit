@@ -4,9 +4,9 @@ import json
 from pathlib import Path
 from .analyzer import analyze_trip_folder
 from .manifest import build_trip_manifest
-from .models import TripAnalysis
+from .models import Trip
 
-def run_analysis(trip_folder: Path) -> tuple[TripAnalysis, Path]:
+def run_analysis(trip_folder: Path) -> tuple[Trip, Path]:
     """Analyze a trip once and write analysis.json plus trip_manifest.json."""
     analysis = analyze_trip_folder(trip_folder)
     output_folder = trip_folder / "output"
