@@ -1,2 +1,10 @@
-# Base configuration placeholder for the AI travel-reel layer.
-# TODO: Define shared configuration fields.
+# Base configuration for the AI travel-reel layer.
+vision:
+  provider: local
+  model: qwen3-vl:4b-instruct
+  endpoint: http://localhost:11434
+  timeout_seconds: 120
+  retries: 1
+  longest_edge: 768
+  jpeg_quality: 88
+  cache_dir_name: .travel_reel_cache/vision

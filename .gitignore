@@ -1,6 +1,7 @@
 # ── 個人化檔案（採用者填的，不該進公開 repo）──
 profiles/
 config.py
+!src/travel_reel/config.py
 *.local.*
 
 # ── 媒體 / 素材（版權 + 體積，絕不入庫）──
@@ -39,6 +40,7 @@ Thumbs.db
 .vscode/
 .idea/
 *.tmp
+.travel_reel_cache/
 
 # stray repro/scratch files
 _repro*

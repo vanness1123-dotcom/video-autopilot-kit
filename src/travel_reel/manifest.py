@@ -1,6 +1,10 @@
 ﻿"""Canonical Trip Manifest construction from analyzer output."""
 from __future__ import annotations
+import json
+import os
 from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any
 from .models import Photo, Trip, Video
 
 @dataclass(frozen=True)
@@ -69,3 +73,56 @@ def _manifest_media(item: Photo | Video) -> ManifestMedia:
     gps = asdict(item.gps) if item.gps else None
     captured_at = item.capture_time.isoformat() if item.capture_time else None
     return ManifestMedia(item.id, item.path.as_posix(), item.size_bytes, captured_at, gps)
+
+
+def load_trip_manifest(path: Path) -> dict[str, Any]:
+    """Load and minimally validate an existing Trip Manifest."""
+    if not path.is_file():
+        raise FileNotFoundError(f"Trip Manifest not found: {path}. Run 'analyze' first.")
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"Cannot read Trip Manifest: {path}") from exc
+    if not isinstance(payload, dict) or not isinstance(payload.get("trip"), dict):
+        raise ValueError("Invalid Trip Manifest: missing trip object")
+    if not isinstance(payload.get("photos"), list) or not isinstance(payload.get("videos"), list):
+        raise ValueError("Invalid Trip Manifest: photos/videos must be arrays")
+    return payload
+
+
+def find_manifest_media(manifest: dict[str, Any], media_id: str) -> dict[str, Any]:
+    """Find one manifest media object without changing collection identity."""
+    for collection in ("photos", "videos"):
+        for item in manifest[collection]:
+            if isinstance(item, dict) and item.get("id") == media_id:
+                return item
+    raise KeyError(f"Manifest media ID not found: {media_id}")
+
+
+def enrich_manifest_media(
+    manifest: dict[str, Any], media_id: str, vision: dict[str, Any]
+) -> None:
+    """Add Vision state while preserving Sprint 2 fields and all unrelated state."""
+    item = find_manifest_media(manifest, media_id)
+    item["vision"] = vision
+    item["description"] = vision["description"]
+    item["tags"] = list(vision["tags"])
+    item["objects"] = list(vision["objects"])
+    item["emotion"] = vision["mood"]
+    item.pop("vision_error", None)
+    if manifest.get("manifest_version") == "1.0":
+        manifest["manifest_version"] = "1.1"
+
+
+def save_trip_manifest_atomic(path: Path, manifest: dict[str, Any]) -> None:
+    """Validate serialization and atomically replace the manifest sibling."""
+    if not isinstance(manifest.get("photos"), list) or not isinstance(manifest.get("videos"), list):
+        raise ValueError("Refusing to save invalid Trip Manifest")
+    serialized = json.dumps(manifest, indent=2, ensure_ascii=False) + "\n"
+    json.loads(serialized)
+    temporary = path.with_name(f".{path.name}.tmp")
+    try:
+        temporary.write_text(serialized, encoding="utf-8")
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
