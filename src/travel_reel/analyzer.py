@@ -10,12 +10,17 @@ from .models import FolderSummary, GpsLocation, Photo, Trip, Video
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".heic", ".webp"}
 VIDEO_EXTENSIONS = {".mp4", ".mov", ".m4v", ".avi"}
+DERIVED_DIRECTORY_NAMES = frozenset({".travel_reel_cache", "output"})
 _CONTAINERS = {b"moov", b"trak", b"mdia", b"minf", b"stbl", b"udta", b"meta"}
 
 def detect_media_kind(path: Path) -> str | None:
     """Classify a path as supported photo, video, or unsupported."""
     suffix = path.suffix.lower()
     return "photo" if suffix in IMAGE_EXTENSIONS else "video" if suffix in VIDEO_EXTENSIONS else None
+
+def is_source_media_path(path: Path, source_folder: Path) -> bool:
+    """Return whether a discovered path is outside generated project directories."""
+    return not DERIVED_DIRECTORY_NAMES.intersection(path.relative_to(source_folder).parts[:-1])
 
 def analyze_trip_folder(trip_folder: Path) -> Trip:
     """Scan a trip folder once and build its canonical domain object."""
@@ -25,7 +30,7 @@ def analyze_trip_folder(trip_folder: Path) -> Trip:
     photos: list[Photo] = []; videos: list[Video] = []
     folders: dict[str, list[int]] = defaultdict(lambda: [0, 0, 0])
     for path in sorted(source_folder.rglob("*")):
-        if not path.is_file() or not (kind := detect_media_kind(path)): continue
+        if not path.is_file() or not is_source_media_path(path, source_folder) or not (kind := detect_media_kind(path)): continue
         capture_time, gps = extract_metadata(path, kind)
         relative_path = path.relative_to(source_folder)
         parent = relative_path.parent.as_posix() or "."
