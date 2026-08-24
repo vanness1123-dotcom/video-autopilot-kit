@@ -2,8 +2,8 @@
 from __future__ import annotations
 import argparse
 from pathlib import Path
-from .config import load_vision_config
-from .pipeline import run_analysis, run_vision
+from .config import load_scoring_config, load_selection_config, load_vision_config
+from .pipeline import run_analysis, run_scoring, run_selection, run_vision
 
 def build_parser() -> argparse.ArgumentParser:
     """Build the travel-reel command parser."""
@@ -14,6 +14,12 @@ def build_parser() -> argparse.ArgumentParser:
     vision = commands.add_parser("vision", help="enrich an existing Trip Manifest using local Vision")
     vision.add_argument("trip_folder", type=Path)
     vision.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
+    score = commands.add_parser("score", help="score Vision-enriched Trip Manifest media")
+    score.add_argument("trip_folder", type=Path)
+    score.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
+    select = commands.add_parser("select", help="build a diverse candidate pool from scores")
+    select.add_argument("trip_folder", type=Path)
+    select.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
     return parser
 
 def main(argv: list[str] | None = None) -> int:
@@ -49,6 +55,31 @@ def main(argv: list[str] | None = None) -> int:
             f"{summary['failed']} failed"
         )
         return 1 if summary["failed"] else 0
+    elif args.command == "score":
+        try:
+            summary = run_scoring(args.trip_folder, load_scoring_config(args.config))
+        except (FileNotFoundError, ValueError) as exc:
+            print(f"Scoring prerequisite error: {exc}")
+            return 2
+        distribution = summary["distribution"]
+        print(
+            f"Scoring complete: {summary['scored']} scored, {summary['unscoreable']} unscoreable\n"
+            f"Distribution: min={distribution['minimum']} mean={distribution['mean']} "
+            f"median={distribution['median']} max={distribution['maximum']}"
+        )
+    elif args.command == "select":
+        try:
+            summary = run_selection(args.trip_folder, load_selection_config(args.config))
+        except (FileNotFoundError, ValueError) as exc:
+            print(f"Selection prerequisite error: {exc}")
+            return 2
+        details = summary["summary"]
+        print(
+            f"Selection complete: {details['primary_count']} primary, "
+            f"{details['alternate_count']} alternates, "
+            f"{len(summary['suppressed_ids'])} suppressed\n"
+            f"Primary mix: {details['photos']} photos, {details['videos']} videos"
+        )
     return 0
 
 if __name__ == "__main__":

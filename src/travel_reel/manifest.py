@@ -126,3 +126,14 @@ def save_trip_manifest_atomic(path: Path, manifest: dict[str, Any]) -> None:
         os.replace(temporary, path)
     finally:
         temporary.unlink(missing_ok=True)
+
+
+def advance_manifest_version(manifest: dict[str, Any], version: str) -> None:
+    """Advance the additive schema version without downgrading newer manifests."""
+    try:
+        current = tuple(int(part) for part in str(manifest.get("manifest_version", "0")).split("."))
+        requested = tuple(int(part) for part in version.split("."))
+    except ValueError as exc:
+        raise ValueError("Invalid Trip Manifest version") from exc
+    if current < requested:
+        manifest["manifest_version"] = version

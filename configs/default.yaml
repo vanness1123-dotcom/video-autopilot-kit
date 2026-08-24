@@ -8,3 +8,25 @@ vision:
   longest_edge: 768
   jpeg_quality: 88
   cache_dir_name: .travel_reel_cache/vision
+
+scoring:
+  technical_quality: 0.15
+  composition: 0.15
+  travel_relevance: 0.20
+  story_value: 0.20
+  uniqueness: 0.10
+  emotion: 0.10
+  vertical_suitability: 0.10
+
+selection:
+  primary_target: 20
+  alternate_target: 10
+  min_video_target: 4
+  max_video_target: 8
+  selfie_soft_ratio: 0.25
+  people_soft_ratio: 0.40
+  category_soft_ratio: 0.30
+  duplicate_time_seconds: 180
+  duplicate_similarity: 0.72
+  duplicate_similarity_without_time: 0.53
+  minimum_video_score: 45

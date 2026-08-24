@@ -5,8 +5,9 @@ import json
 from pathlib import Path
 from typing import Callable
 from .analyzer import analyze_trip_folder
-from .config import VisionConfig, load_vision_config
+from .config import ScoringConfig, SelectionConfig, VisionConfig, load_vision_config
 from .manifest import (
+    advance_manifest_version,
     build_trip_manifest,
     enrich_manifest_media,
     load_trip_manifest,
@@ -21,6 +22,8 @@ from .media_preprocess import (
     source_fingerprint,
 )
 from .models import Trip
+from .scoring import score_manifest
+from .selector import select_manifest
 from .vision import (
     VisionError,
     VisionProvider,
@@ -117,6 +120,67 @@ def run_vision(
                 save_trip_manifest_atomic(manifest_path, manifest)
                 _progress(progress, f"ERROR {media_id}: {type(exc).__name__}: {exc}")
     return counts
+
+
+def run_scoring(trip_folder: Path, config: ScoringConfig) -> dict[str, object]:
+    """Recompute deterministic scores from manifest Vision and read-only media facts."""
+    root = trip_folder.resolve()
+    manifest_path = root / "output" / "trip_manifest.json"
+    manifest = load_trip_manifest(manifest_path)
+    facts = _derive_scoring_facts(root, manifest)
+    summary = score_manifest(manifest, config, facts)
+    advance_manifest_version(manifest, "1.2")
+    save_trip_manifest_atomic(manifest_path, manifest)
+    return summary
+
+
+def run_selection(trip_folder: Path, config: SelectionConfig) -> dict[str, object]:
+    """Recompute duplicate and candidate state from persisted Sprint 4 scores."""
+    root = trip_folder.resolve()
+    manifest_path = root / "output" / "trip_manifest.json"
+    manifest = load_trip_manifest(manifest_path)
+    scoreable = [
+        item for collection in ("photos", "videos") for item in manifest[collection]
+        if isinstance(item, dict) and isinstance(item.get("score"), dict)
+    ]
+    if not scoreable:
+        raise ValueError("Trip Manifest has no Sprint 4 scores. Run 'score' first.")
+    selection = select_manifest(manifest, config)
+    advance_manifest_version(manifest, "1.2")
+    save_trip_manifest_atomic(manifest_path, manifest)
+    return selection
+
+
+def _derive_scoring_facts(root: Path, manifest: dict[str, object]) -> dict[str, dict[str, float | int | None]]:
+    facts: dict[str, dict[str, float | int | None]] = {}
+    for media_type, collection in (("photo", "photos"), ("video", "videos")):
+        for item in manifest[collection]:  # type: ignore[index]
+            if not isinstance(item, dict) or not isinstance(item.get("id"), str):
+                continue
+            current: dict[str, float | int | None] = {
+                "width": item.get("width") if isinstance(item.get("width"), (int, float)) else None,
+                "height": item.get("height") if isinstance(item.get("height"), (int, float)) else None,
+                "duration": item.get("duration") if isinstance(item.get("duration"), (int, float)) else None,
+            }
+            try:
+                source = _resolve_media_source(root, item.get("path"))
+                if media_type == "photo" and (current["width"] is None or current["height"] is None):
+                    from PIL import Image, ImageOps
+                    with Image.open(source) as image:
+                        oriented = ImageOps.exif_transpose(image)
+                        current["width"], current["height"] = oriented.size
+                elif media_type == "video" and (
+                    current["width"] is None or current["height"] is None or current["duration"] is None
+                ):
+                    probe = probe_video(source)
+                    width, height = probe.width, probe.height
+                    if probe.rotation % 180:
+                        width, height = height, width
+                    current.update(width=width, height=height, duration=probe.duration_seconds)
+            except (ImportError, OSError, ValueError, VisionPreprocessError):
+                pass
+            facts[item["id"]] = current
+    return facts
 
 
 def _progress(callback: Callable[[str], None] | None, message: str) -> None:
