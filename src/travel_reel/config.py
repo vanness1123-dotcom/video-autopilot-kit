@@ -169,6 +169,50 @@ class PlannerConfig:
             raise ValueError("Unsupported Planner framing intent")
 
 
+@dataclass(frozen=True)
+class RendererConfig:
+    """Local FFmpeg execution and delivery settings for planned Reels."""
+
+    width: int = 1080
+    height: int = 1920
+    fps: int = 30
+    video_codec: str = "libx264"
+    pixel_format: str = "yuv420p"
+    preset: str = "medium"
+    crf: int = 20
+    audio_codec: str = "aac"
+    audio_bitrate: str = "192k"
+    output_filename: str = "reel.mp4"
+    temp_directory_name: str = ".travel_reel_render"
+    keep_temp: bool = False
+    photo_motion: str = "none"
+    background_mode: str = "black"
+    ffmpeg_loglevel: str = "error"
+
+    def __post_init__(self) -> None:
+        if self.width <= 0 or self.height <= 0 or self.fps <= 0:
+            raise ValueError("Renderer dimensions and FPS must be positive")
+        if self.width * 16 != self.height * 9:
+            raise ValueError("Renderer dimensions must match the Planner 9:16 aspect ratio")
+        if self.video_codec != "libx264" or self.pixel_format != "yuv420p":
+            raise ValueError("Sprint 7 Renderer supports libx264 with yuv420p")
+        if not 0 <= self.crf <= 51:
+            raise ValueError("Renderer CRF must be within 0..51")
+        if self.output_filename != Path(self.output_filename).name or Path(self.output_filename).suffix.lower() != ".mp4":
+            raise ValueError("Renderer output_filename must be a safe MP4 filename")
+        temp = Path(self.temp_directory_name)
+        if temp.is_absolute() or temp.name != self.temp_directory_name or self.temp_directory_name in {"", ".", ".."}:
+            raise ValueError("Renderer temp_directory_name must be one safe directory name")
+        if self.photo_motion != "none":
+            raise ValueError("Sprint 7 Renderer supports only photo_motion: none")
+        if self.background_mode != "black":
+            raise ValueError("Sprint 7 Renderer supports only background_mode: black")
+        if not isinstance(self.keep_temp, bool):
+            raise ValueError("Renderer keep_temp must be boolean")
+        if self.ffmpeg_loglevel not in {"quiet", "panic", "fatal", "error", "warning", "info"}:
+            raise ValueError("Unsupported FFmpeg log level")
+
+
 def load_vision_config(path: Path | None = None) -> VisionConfig:
     """Load the known `vision:` YAML keys without requiring PyYAML."""
     config = VisionConfig()
@@ -237,6 +281,26 @@ def load_planner_config(path: Path | None = None) -> PlannerConfig:
         for key, value in values.items() if key in PlannerConfig.__dataclass_fields__
     }
     return PlannerConfig(**updates)
+
+
+def load_renderer_config(path: Path | None = None) -> RendererConfig:
+    """Load the dependency-free ``renderer:`` section."""
+    values = _yaml_section_values(_config_text(path), "renderer")
+    integer_keys = {"width", "height", "fps", "crf"}
+    boolean_keys = {"keep_temp"}
+    updates = {}
+    for key, value in values.items():
+        if key not in RendererConfig.__dataclass_fields__:
+            continue
+        if key in integer_keys:
+            updates[key] = int(value)
+        elif key in boolean_keys:
+            if value.lower() not in {"true", "false"}:
+                raise ValueError(f"Renderer {key} must be true or false")
+            updates[key] = value.lower() == "true"
+        else:
+            updates[key] = value
+    return RendererConfig(**updates)
 
 
 def _vision_yaml_values(text: str) -> dict[str, str]:

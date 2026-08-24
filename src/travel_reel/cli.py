@@ -2,8 +2,9 @@
 from __future__ import annotations
 import argparse
 from pathlib import Path
-from .config import load_planner_config, load_scoring_config, load_selection_config, load_story_config, load_vision_config
-from .pipeline import run_analysis, run_planner, run_scoring, run_selection, run_story, run_vision
+from .config import load_planner_config, load_renderer_config, load_scoring_config, load_selection_config, load_story_config, load_vision_config
+from .pipeline import run_analysis, run_planner, run_renderer, run_scoring, run_selection, run_story, run_vision
+from .renderer import RendererPrerequisiteError
 
 def build_parser() -> argparse.ArgumentParser:
     """Build the travel-reel command parser."""
@@ -26,6 +27,9 @@ def build_parser() -> argparse.ArgumentParser:
     plan = commands.add_parser("plan", help="build a deterministic editing timeline from Story state")
     plan.add_argument("trip_folder", type=Path)
     plan.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
+    render = commands.add_parser("render", help="materialize the persisted Reel Plan as a local MP4")
+    render.add_argument("trip_folder", type=Path)
+    render.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
     return parser
 
 def main(argv: list[str] | None = None) -> int:
@@ -109,6 +113,24 @@ def main(argv: list[str] | None = None) -> int:
             f"Planning complete: {summary['planned_shot_count']} shots, "
             f"{summary['photos']} photos, {summary['videos']} videos, "
             f"{plan['actual_duration_seconds']:.3f}s"
+        )
+    elif args.command == "render":
+        try:
+            state, output_path = run_renderer(args.trip_folder, load_renderer_config(args.config))
+        except (FileNotFoundError, RendererPrerequisiteError) as exc:
+            print(f"Renderer prerequisite error: {exc}")
+            return 2
+        except (ValueError, RuntimeError) as exc:
+            print(f"Renderer error: {exc}")
+            return 1
+        print(
+            "Render complete:\n"
+            f"Output: {output_path}\n"
+            f"Duration: {state['duration_seconds']:.3f}s\n"
+            f"Resolution: {state['width']}x{state['height']}\n"
+            f"Shots: {state['shot_count']}\n"
+            f"Photos: {state['photo_count']}\n"
+            f"Videos: {state['video_count']}"
         )
     return 0
 

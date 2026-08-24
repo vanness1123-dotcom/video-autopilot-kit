@@ -56,3 +56,20 @@ planner:
   closing_bias_seconds: 0.4
   default_transition: cut
   default_framing: center
+
+renderer:
+  width: 1080
+  height: 1920
+  fps: 30
+  video_codec: libx264
+  pixel_format: yuv420p
+  preset: medium
+  crf: 20
+  audio_codec: aac
+  audio_bitrate: 192k
+  output_filename: reel.mp4
+  temp_directory_name: .travel_reel_render
+  keep_temp: false
+  photo_motion: none
+  background_mode: black
+  ffmpeg_loglevel: error

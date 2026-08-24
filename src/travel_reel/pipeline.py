@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from typing import Callable
 from .analyzer import analyze_trip_folder
-from .config import PlannerConfig, ScoringConfig, SelectionConfig, StoryConfig, VisionConfig, load_vision_config
+from .config import PlannerConfig, RendererConfig, ScoringConfig, SelectionConfig, StoryConfig, VisionConfig, load_vision_config
 from .manifest import (
     advance_manifest_version,
     build_trip_manifest,
@@ -22,6 +22,7 @@ from .media_preprocess import (
     source_fingerprint,
 )
 from .planner import build_reel_plan
+from .renderer import render_reel
 from .models import Trip
 from .scoring import score_manifest
 from .selector import select_manifest
@@ -199,6 +200,18 @@ def run_planner(trip_folder: Path, config: PlannerConfig) -> dict[str, object]:
     advance_manifest_version(manifest, "1.4")
     save_trip_manifest_atomic(manifest_path, manifest)
     return plan
+
+
+def run_renderer(trip_folder: Path, config: RendererConfig) -> tuple[dict[str, object], Path]:
+    """Render persisted Planner state, then atomically persist only completed render state."""
+    root = trip_folder.resolve()
+    manifest_path = root / "output" / "trip_manifest.json"
+    manifest = load_trip_manifest(manifest_path)
+    render_state, output_path = render_reel(root, manifest, config)
+    manifest["render"] = render_state
+    advance_manifest_version(manifest, "1.5")
+    save_trip_manifest_atomic(manifest_path, manifest)
+    return render_state, output_path
 
 
 def _derive_scoring_facts(root: Path, manifest: dict[str, object]) -> dict[str, dict[str, float | int | None]]:

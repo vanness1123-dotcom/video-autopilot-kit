@@ -41,6 +41,7 @@ Thumbs.db
 .idea/
 *.tmp
 .travel_reel_cache/
+.travel_reel_render/
 
 # stray repro/scratch files
 _repro*
