@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import base64
+import copy
 import json
 import socket
 import time
@@ -48,6 +49,7 @@ class LocalVisionProvider:
         return self._analyze(media_id, frames, f"{_VIDEO_PROMPT}\nFrame timestamps: {timestamp_text}")
 
     def _analyze(self, media_id: str, images: list[Path], prompt: str) -> VisionResult:
+        encoded_images = [base64.b64encode(path.read_bytes()).decode("ascii") for path in images]
         request_payload = {
             "model": self.model,
             "stream": False,
@@ -57,15 +59,16 @@ class LocalVisionProvider:
             "messages": [{
                 "role": "user",
                 "content": f"Media ID: {media_id}\n{prompt}",
-                "images": [base64.b64encode(path.read_bytes()).decode("ascii") for path in images],
+                "images": encoded_images,
             }],
         }
-        raw = self._post(request_payload)
         try:
-            content = raw["message"]["content"]
-            payload = json.loads(content)
-        except (KeyError, TypeError, json.JSONDecodeError) as exc:
-            raise VisionResponseValidationError("Ollama returned invalid structured JSON") from exc
+            payload = _decode_ollama_content(self._post(request_payload))
+        except VisionResponseValidationError:
+            retry_payload = copy.deepcopy(request_payload)
+            retry_payload["format"] = _BOUNDED_OLLAMA_SCHEMA
+            retry_payload["messages"][0]["content"] += _STRUCTURED_RETRY_INSTRUCTION
+            payload = _decode_ollama_content(self._post(retry_payload))
         return normalize_vision_result(payload)
 
     def _post(self, payload: dict[str, Any]) -> dict[str, Any]:
@@ -107,6 +110,12 @@ be omitted or left empty unless meaningful. Use the supplied controlled vocabula
 
 _PHOTO_PROMPT = _BASE_PROMPT + "\nAnalyze this single photo."
 _VIDEO_PROMPT = _BASE_PROMPT + "\nThe images are ordered representative frames from one video. Aggregate them into one video-level observation and mention visible change or action only when supported across frames."
+
+_STRUCTURED_RETRY_INSTRUCTION = (
+    "\nYour previous response was invalid or incomplete. Return the complete JSON object again. "
+    "Return at most 16 unique concise tags and at most 20 unique concise objects. "
+    "Never repeat list items."
+)
 
 _OLLAMA_SCHEMA = {
     "type": "object",
@@ -164,3 +173,38 @@ _OLLAMA_SCHEMA = {
         "confidence": {"type": "object", "additionalProperties": {"type": "number"}},
     },
 }
+
+_BOUNDED_OLLAMA_SCHEMA = copy.deepcopy(_OLLAMA_SCHEMA)
+_BOUNDED_OLLAMA_SCHEMA["properties"]["tags"]["maxItems"] = 16
+_BOUNDED_OLLAMA_SCHEMA["properties"]["objects"]["maxItems"] = 20
+
+
+def _decode_ollama_content(raw: object) -> dict[str, Any]:
+    """Decode the assistant JSON while retaining safe diagnostic context."""
+    done_reason = raw.get("done_reason") if isinstance(raw, dict) else None
+    try:
+        message = raw["message"]  # type: ignore[index]
+        content = message["content"]
+    except (KeyError, TypeError) as exc:
+        raise VisionResponseValidationError(
+            f"Ollama structured response is missing message.content (done_reason={done_reason!r})"
+        ) from exc
+    if not isinstance(content, str):
+        raise VisionResponseValidationError(
+            "Ollama structured response message.content must be a string "
+            f"(done_reason={done_reason!r}, type={type(content).__name__})"
+        )
+    try:
+        payload = json.loads(content)
+    except json.JSONDecodeError as exc:
+        raise VisionResponseValidationError(
+            "Ollama returned invalid structured JSON "
+            f"(done_reason={done_reason!r}, content_length={len(content)}, "
+            f"parse_error={exc.msg!r}, line={exc.lineno}, column={exc.colno}, char={exc.pos})"
+        ) from exc
+    if not isinstance(payload, dict):
+        raise VisionResponseValidationError(
+            "Ollama structured JSON must be an object "
+            f"(done_reason={done_reason!r}, type={type(payload).__name__})"
+        )
+    return payload

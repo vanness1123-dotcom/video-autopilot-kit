@@ -45,8 +45,39 @@ class LocalVisionProviderTests(unittest.TestCase):
             image = Path(directory) / "frame.jpg"
             image.write_bytes(b"jpeg")
             response = {"message": {"content": "not-json"}}
+            with patch("urllib.request.urlopen", return_value=_Response(response)) as call:
+                with self.assertRaisesRegex(VisionResponseValidationError, "parse_error"):
+                    LocalVisionProvider(retries=0).analyze_photo("photo-1", image)
+            self.assertEqual(call.call_count, 2)
+
+    def test_invalid_structured_json_gets_one_bounded_retry(self) -> None:
+        with TemporaryDirectory() as directory:
+            image = Path(directory) / "frame.jpg"
+            image.write_bytes(b"jpeg")
+            invalid = {
+                "done_reason": "length",
+                "message": {"content": '{"objects": ["repeated"'},
+            }
+            valid = {"done_reason": "stop", "message": {"content": json.dumps(valid_payload())}}
+            with patch(
+                "urllib.request.urlopen",
+                side_effect=[_Response(invalid), _Response(valid)],
+            ) as call:
+                result = LocalVisionProvider(retries=0).analyze_photo("photo-1", image)
+            self.assertEqual(result.travel_category, "street")
+            self.assertEqual(call.call_count, 2)
+            retry_body = json.loads(call.call_args_list[1].args[0].data)
+            self.assertEqual(retry_body["format"]["properties"]["tags"]["maxItems"], 16)
+            self.assertEqual(retry_body["format"]["properties"]["objects"]["maxItems"], 20)
+            self.assertIn("Never repeat list items", retry_body["messages"][0]["content"])
+
+    def test_non_object_structured_json_is_rejected_after_retry(self) -> None:
+        with TemporaryDirectory() as directory:
+            image = Path(directory) / "frame.jpg"
+            image.write_bytes(b"jpeg")
+            response = {"done_reason": "stop", "message": {"content": "[]"}}
             with patch("urllib.request.urlopen", return_value=_Response(response)):
-                with self.assertRaises(VisionResponseValidationError):
+                with self.assertRaisesRegex(VisionResponseValidationError, "must be an object"):
                     LocalVisionProvider(retries=0).analyze_photo("photo-1", image)
 
 
