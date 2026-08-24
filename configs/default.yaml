@@ -38,3 +38,21 @@ story:
   highlight_target: 3
   max_alternates: 2
   chronology_min_ratio: 0.70
+
+planner:
+  target_duration_seconds: 40.0
+  aspect_ratio: "9:16"
+  duration_tolerance_seconds: 0.01
+  min_shots: 15
+  max_shots: 18
+  photo_min_duration: 1.0
+  photo_default_duration: 1.8
+  photo_max_duration: 2.5
+  video_min_duration: 1.5
+  video_default_duration: 3.0
+  video_max_duration: 4.0
+  hook_bias_seconds: 0.5
+  highlight_bias_seconds: 0.5
+  closing_bias_seconds: 0.4
+  default_transition: cut
+  default_framing: center

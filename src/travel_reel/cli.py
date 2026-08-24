@@ -2,8 +2,8 @@
 from __future__ import annotations
 import argparse
 from pathlib import Path
-from .config import load_scoring_config, load_selection_config, load_story_config, load_vision_config
-from .pipeline import run_analysis, run_scoring, run_selection, run_story, run_vision
+from .config import load_planner_config, load_scoring_config, load_selection_config, load_story_config, load_vision_config
+from .pipeline import run_analysis, run_planner, run_scoring, run_selection, run_story, run_vision
 
 def build_parser() -> argparse.ArgumentParser:
     """Build the travel-reel command parser."""
@@ -23,6 +23,9 @@ def build_parser() -> argparse.ArgumentParser:
     story = commands.add_parser("story", help="build a narrative from Sprint 4 candidates")
     story.add_argument("trip_folder", type=Path)
     story.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
+    plan = commands.add_parser("plan", help="build a deterministic editing timeline from Story state")
+    plan.add_argument("trip_folder", type=Path)
+    plan.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
     return parser
 
 def main(argv: list[str] | None = None) -> int:
@@ -94,6 +97,18 @@ def main(argv: list[str] | None = None) -> int:
             f"Story complete: {summary['item_count']} items, {summary['section_count']} sections, "
             f"{summary['alternate_count']} alternates\n"
             f"Arc: {' -> '.join(story['structure'])}"
+        )
+    elif args.command == "plan":
+        try:
+            plan = run_planner(args.trip_folder, load_planner_config(args.config))
+        except (FileNotFoundError, ValueError) as exc:
+            print(f"Planner prerequisite error: {exc}")
+            return 2
+        summary = plan["summary"]
+        print(
+            f"Planning complete: {summary['planned_shot_count']} shots, "
+            f"{summary['photos']} photos, {summary['videos']} videos, "
+            f"{plan['actual_duration_seconds']:.3f}s"
         )
     return 0
 

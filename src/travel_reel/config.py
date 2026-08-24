@@ -123,6 +123,52 @@ class StoryConfig:
             raise ValueError("Story chronology_min_ratio must be within 0..1")
 
 
+@dataclass(frozen=True)
+class PlannerConfig:
+    """Deterministic editorial timing and renderer-intent policy."""
+
+    target_duration_seconds: float = 40.0
+    aspect_ratio: str = "9:16"
+    duration_tolerance_seconds: float = 0.01
+    min_shots: int = 15
+    max_shots: int = 18
+    photo_min_duration: float = 1.0
+    photo_default_duration: float = 1.8
+    photo_max_duration: float = 2.5
+    video_min_duration: float = 1.5
+    video_default_duration: float = 3.0
+    video_max_duration: float = 4.0
+    hook_bias_seconds: float = 0.5
+    highlight_bias_seconds: float = 0.5
+    closing_bias_seconds: float = 0.4
+    default_transition: str = "cut"
+    default_framing: str = "center"
+
+    def __post_init__(self) -> None:
+        if self.target_duration_seconds <= 0 or self.duration_tolerance_seconds < 0:
+            raise ValueError("Planner target must be positive and tolerance cannot be negative")
+        if self.aspect_ratio != "9:16":
+            raise ValueError("Sprint 6 Planner supports only the 9:16 aspect ratio")
+        if not 1 <= self.min_shots <= self.max_shots:
+            raise ValueError("Planner shot limits must satisfy 1 <= min_shots <= max_shots")
+        for kind in ("photo", "video"):
+            low = getattr(self, f"{kind}_min_duration")
+            default = getattr(self, f"{kind}_default_duration")
+            high = getattr(self, f"{kind}_max_duration")
+            if not 0 < low <= default <= high:
+                raise ValueError(f"Planner {kind} durations must satisfy 0 < min <= default <= max")
+        if any(value < 0 for value in (self.hook_bias_seconds, self.highlight_bias_seconds, self.closing_bias_seconds)):
+            raise ValueError("Planner duration biases cannot be negative")
+        if self.max_shots * max(self.photo_max_duration, self.video_max_duration) < self.target_duration_seconds:
+            raise ValueError("Planner shot maxima cannot reach target duration")
+        if self.min_shots * min(self.photo_min_duration, self.video_min_duration) > self.target_duration_seconds:
+            raise ValueError("Planner shot minima exceed target duration")
+        if self.default_transition not in {"cut", "crossfade", "fade", "dip_to_black", "match_motion"}:
+            raise ValueError("Unsupported Planner transition intent")
+        if self.default_framing not in {"center", "fit", "subject_centered", "top_safe", "bottom_safe", "face_safe", "blur_fill"}:
+            raise ValueError("Unsupported Planner framing intent")
+
+
 def load_vision_config(path: Path | None = None) -> VisionConfig:
     """Load the known `vision:` YAML keys without requiring PyYAML."""
     config = VisionConfig()
@@ -179,6 +225,18 @@ def load_story_config(path: Path | None = None) -> StoryConfig:
         if key in known
     }
     return StoryConfig(**updates)
+
+
+def load_planner_config(path: Path | None = None) -> PlannerConfig:
+    """Load the dependency-free ``planner:`` section."""
+    values = _yaml_section_values(_config_text(path), "planner")
+    integer_keys = {"min_shots", "max_shots"}
+    string_keys = {"aspect_ratio", "default_transition", "default_framing"}
+    updates = {
+        key: int(value) if key in integer_keys else value if key in string_keys else float(value)
+        for key, value in values.items() if key in PlannerConfig.__dataclass_fields__
+    }
+    return PlannerConfig(**updates)
 
 
 def _vision_yaml_values(text: str) -> dict[str, str]:

@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from typing import Callable
 from .analyzer import analyze_trip_folder
-from .config import ScoringConfig, SelectionConfig, StoryConfig, VisionConfig, load_vision_config
+from .config import PlannerConfig, ScoringConfig, SelectionConfig, StoryConfig, VisionConfig, load_vision_config
 from .manifest import (
     advance_manifest_version,
     build_trip_manifest,
@@ -21,6 +21,7 @@ from .media_preprocess import (
     representative_timestamps,
     source_fingerprint,
 )
+from .planner import build_reel_plan
 from .models import Trip
 from .scoring import score_manifest
 from .selector import select_manifest
@@ -168,6 +169,36 @@ def run_story(
     advance_manifest_version(manifest, "1.3")
     save_trip_manifest_atomic(manifest_path, manifest)
     return story
+
+
+def run_planner(trip_folder: Path, config: PlannerConfig) -> dict[str, object]:
+    """Replace only Planner-owned state from persisted Story state and local source facts."""
+    root = trip_folder.resolve()
+    manifest_path = root / "output" / "trip_manifest.json"
+    manifest = load_trip_manifest(manifest_path)
+    story = manifest.get("story")
+    if not isinstance(story, dict) or not isinstance(story.get("sequence"), list) or not story["sequence"]:
+        # Keep the stable CLI-facing prerequisite wording in the domain layer.
+        return build_reel_plan(manifest, config)
+    by_id = {
+        item.get("id"): item for item in manifest.get("videos", []) if isinstance(item, dict)
+    }
+    durations: dict[str, float] = {}
+    for entry in story["sequence"]:
+        media_id = entry.get("media_id") if isinstance(entry, dict) else None
+        item = by_id.get(media_id)
+        if not item or isinstance(item.get("duration"), (int, float)):
+            continue
+        try:
+            durations[str(media_id)] = probe_video(_resolve_media_source(root, item.get("path"))).duration_seconds
+        except (OSError, ValueError, VisionPreprocessError):
+            # Domain planning records this deterministic omission rather than failing unrelated shots.
+            pass
+    plan = build_reel_plan(manifest, config, durations)
+    manifest["reel_plan"] = plan
+    advance_manifest_version(manifest, "1.4")
+    save_trip_manifest_atomic(manifest_path, manifest)
+    return plan
 
 
 def _derive_scoring_facts(root: Path, manifest: dict[str, object]) -> dict[str, dict[str, float | int | None]]:
