@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from typing import Callable
 from .analyzer import analyze_trip_folder
-from .config import ScoringConfig, SelectionConfig, VisionConfig, load_vision_config
+from .config import ScoringConfig, SelectionConfig, StoryConfig, VisionConfig, load_vision_config
 from .manifest import (
     advance_manifest_version,
     build_trip_manifest,
@@ -24,6 +24,7 @@ from .media_preprocess import (
 from .models import Trip
 from .scoring import score_manifest
 from .selector import select_manifest
+from .story import DeterministicStoryProvider, StoryProvider, validate_story
 from .vision import (
     VisionError,
     VisionProvider,
@@ -149,6 +150,24 @@ def run_selection(trip_folder: Path, config: SelectionConfig) -> dict[str, objec
     advance_manifest_version(manifest, "1.2")
     save_trip_manifest_atomic(manifest_path, manifest)
     return selection
+
+
+def run_story(
+    trip_folder: Path,
+    config: StoryConfig,
+    provider: StoryProvider | None = None,
+) -> dict[str, object]:
+    """Replace only Story-owned state using the persisted Sprint 4 candidate pool."""
+    root = trip_folder.resolve()
+    manifest_path = root / "output" / "trip_manifest.json"
+    manifest = load_trip_manifest(manifest_path)
+    provider = provider or DeterministicStoryProvider()
+    story = provider.build(manifest, config)
+    validate_story(story, manifest)
+    manifest["story"] = story
+    advance_manifest_version(manifest, "1.3")
+    save_trip_manifest_atomic(manifest_path, manifest)
+    return story
 
 
 def _derive_scoring_facts(root: Path, manifest: dict[str, object]) -> dict[str, dict[str, float | int | None]]:

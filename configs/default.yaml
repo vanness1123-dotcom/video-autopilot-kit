@@ -30,3 +30,11 @@ selection:
   duplicate_similarity: 0.72
   duplicate_similarity_without_time: 0.53
   minimum_video_score: 45
+
+story:
+  style: cinematic-travel
+  min_story_items: 4
+  max_story_items: 20
+  highlight_target: 3
+  max_alternates: 2
+  chronology_min_ratio: 0.70

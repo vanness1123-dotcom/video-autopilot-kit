@@ -99,6 +99,30 @@ class SelectionConfig:
             raise ValueError("Invalid duplicate window or minimum video score")
 
 
+@dataclass(frozen=True)
+class StoryConfig:
+    """Small deterministic policy surface for narrative construction."""
+
+    style: str = "cinematic-travel"
+    min_story_items: int = 4
+    max_story_items: int = 20
+    highlight_target: int = 3
+    max_alternates: int = 2
+    chronology_min_ratio: float = 0.70
+
+    def __post_init__(self) -> None:
+        if self.style != "cinematic-travel":
+            raise ValueError(f"Unsupported Story style: {self.style}")
+        if not 1 <= self.min_story_items <= self.max_story_items:
+            raise ValueError("Story item targets must satisfy 1 <= min <= max")
+        if not 1 <= self.highlight_target <= self.max_story_items:
+            raise ValueError("Story highlight target must be within the story item limit")
+        if not 0 <= self.max_alternates <= self.max_story_items:
+            raise ValueError("Story max_alternates must be within the story item limit")
+        if not 0 <= self.chronology_min_ratio <= 1:
+            raise ValueError("Story chronology_min_ratio must be within 0..1")
+
+
 def load_vision_config(path: Path | None = None) -> VisionConfig:
     """Load the known `vision:` YAML keys without requiring PyYAML."""
     config = VisionConfig()
@@ -142,6 +166,19 @@ def load_selection_config(path: Path | None = None) -> SelectionConfig:
         if key in known
     }
     return SelectionConfig(**updates)
+
+
+def load_story_config(path: Path | None = None) -> StoryConfig:
+    """Load the dependency-free ``story:`` section."""
+    values = _yaml_section_values(_config_text(path), "story")
+    integer_keys = {"min_story_items", "max_story_items", "highlight_target", "max_alternates"}
+    known = StoryConfig.__dataclass_fields__
+    updates = {
+        key: int(value) if key in integer_keys else float(value) if key == "chronology_min_ratio" else value
+        for key, value in values.items()
+        if key in known
+    }
+    return StoryConfig(**updates)
 
 
 def _vision_yaml_values(text: str) -> dict[str, str]:

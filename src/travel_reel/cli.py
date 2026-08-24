@@ -2,8 +2,8 @@
 from __future__ import annotations
 import argparse
 from pathlib import Path
-from .config import load_scoring_config, load_selection_config, load_vision_config
-from .pipeline import run_analysis, run_scoring, run_selection, run_vision
+from .config import load_scoring_config, load_selection_config, load_story_config, load_vision_config
+from .pipeline import run_analysis, run_scoring, run_selection, run_story, run_vision
 
 def build_parser() -> argparse.ArgumentParser:
     """Build the travel-reel command parser."""
@@ -20,6 +20,9 @@ def build_parser() -> argparse.ArgumentParser:
     select = commands.add_parser("select", help="build a diverse candidate pool from scores")
     select.add_argument("trip_folder", type=Path)
     select.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
+    story = commands.add_parser("story", help="build a narrative from Sprint 4 candidates")
+    story.add_argument("trip_folder", type=Path)
+    story.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
     return parser
 
 def main(argv: list[str] | None = None) -> int:
@@ -79,6 +82,18 @@ def main(argv: list[str] | None = None) -> int:
             f"{details['alternate_count']} alternates, "
             f"{len(summary['suppressed_ids'])} suppressed\n"
             f"Primary mix: {details['photos']} photos, {details['videos']} videos"
+        )
+    elif args.command == "story":
+        try:
+            story = run_story(args.trip_folder, load_story_config(args.config))
+        except (FileNotFoundError, ValueError) as exc:
+            print(f"Story prerequisite error: {exc}")
+            return 2
+        summary = story["summary"]
+        print(
+            f"Story complete: {summary['item_count']} items, {summary['section_count']} sections, "
+            f"{summary['alternate_count']} alternates\n"
+            f"Arc: {' -> '.join(story['structure'])}"
         )
     return 0
 
