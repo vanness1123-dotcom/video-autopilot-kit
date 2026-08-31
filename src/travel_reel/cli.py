@@ -2,8 +2,8 @@
 from __future__ import annotations
 import argparse
 from pathlib import Path
-from .config import load_planner_config, load_renderer_config, load_scoring_config, load_selection_config, load_story_config, load_vision_config
-from .pipeline import run_analysis, run_planner, run_renderer, run_scoring, run_selection, run_story, run_vision
+from .config import load_event_config, load_planner_config, load_renderer_config, load_scoring_config, load_selection_config, load_story_config, load_vision_config
+from .pipeline import run_analysis, run_events, run_planner, run_renderer, run_scoring, run_selection, run_story, run_vision
 from .renderer import RendererPrerequisiteError
 
 def build_parser() -> argparse.ArgumentParser:
@@ -18,6 +18,9 @@ def build_parser() -> argparse.ArgumentParser:
     score = commands.add_parser("score", help="score Vision-enriched Trip Manifest media")
     score.add_argument("trip_folder", type=Path)
     score.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
+    events = commands.add_parser("events", help="group Vision-enriched media into coherent travel events")
+    events.add_argument("trip_folder", type=Path)
+    events.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
     select = commands.add_parser("select", help="build a diverse candidate pool from scores")
     select.add_argument("trip_folder", type=Path)
     select.add_argument("--config", type=Path, default=Path("configs/default.yaml"))
@@ -90,6 +93,13 @@ def main(argv: list[str] | None = None) -> int:
             f"{len(summary['suppressed_ids'])} suppressed\n"
             f"Primary mix: {details['photos']} photos, {details['videos']} videos"
         )
+    elif args.command == "events":
+        try:
+            state = run_events(args.trip_folder, load_event_config(args.config))
+        except (FileNotFoundError, ValueError) as exc:
+            print(f"Events prerequisite error: {exc}")
+            return 2
+        print(f"Events complete: {state['summary']['event_count']} events, {state['summary']['media_count']} media grouped")
     elif args.command == "story":
         try:
             story = run_story(args.trip_folder, load_story_config(args.config))

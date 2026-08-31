@@ -103,6 +103,10 @@ def group_duplicates(
     ordered = sorted(candidates, key=lambda item: item["id"])
     for index, first in enumerate(ordered):
         for second in ordered[index + 1:]:
+            first_event = (first.get("event") or {}).get("event_id")
+            second_event = (second.get("event") or {}).get("event_id")
+            if first_event and second_event and first_event != second_event:
+                continue
             if first["_media_type"] != second["_media_type"]:
                 continue
             if _exact_fingerprint(first) and _exact_fingerprint(first) == _exact_fingerprint(second):
@@ -198,6 +202,9 @@ def _utility(item: dict[str, Any], chosen: list[dict[str, Any]], slots: int, con
     people_count = sum(_people(entry).get("visible") is True for entry in chosen)
     value = _score(item)
     category, scene = vision.get("travel_category"), vision.get("scene_type")
+    event_id = (item.get("event") or {}).get("event_id")
+    chosen_events = {(entry.get("event") or {}).get("event_id") for entry in chosen}
+    if event_id and event_id not in chosen_events: value += 14.0
     if category not in categories: value += 10.0
     if scene not in scenes: value += 6.0
     if _bucket(item) not in {_bucket(entry) for entry in chosen}: value += 5.0

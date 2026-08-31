@@ -1,6 +1,8 @@
 # AI Travel Reel Generator — Story Engine Specification
 
 **Document Version:** 1.0
+
+> Sprint 7.5 Story output uses contiguous Event blocks. One strong later-Event hook may be explicitly marked as a teaser; the Event's remaining media stays in one later block.
 **Status:** Baseline
 **Component:** Story Engine
 **Related Documents:** `system-architecture.md`, `trip-manifest.md`, `vision-provider.md`, `scoring-system.md`, `media-selector.md`

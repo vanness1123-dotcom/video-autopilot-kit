@@ -1,6 +1,8 @@
 # AI Travel Reel Generator — Trip Manifest Specification
 
 **Document Version:** 1.0
+
+> Sprint 7.5 adds additive `events` state and media-level `event` membership as defined in `event-scene-intelligence.md`. Recomputing Events preserves inventory, Vision, and scores while invalidating selection, Story, Reel Plan, and render state.
 **Schema Version:** 1.0
 **Status:** Baseline
 **Related Architecture:** `system-architecture.md`

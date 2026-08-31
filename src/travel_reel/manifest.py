@@ -37,6 +37,7 @@ class TripManifest:
     trip: dict[str, object]
     photos: list[ManifestMedia]
     videos: list[ManifestMedia]
+    events: dict[str, object]
     scenes: list[object]
     story: dict[str, object]
     timeline: dict[str, object]
@@ -49,6 +50,7 @@ class TripManifest:
             "trip": self.trip,
             "photos": [photo.to_dict() for photo in self.photos],
             "videos": [video.to_dict() for video in self.videos],
+            "events": self.events,
             "scenes": self.scenes,
             "story": self.story,
             "timeline": self.timeline,
@@ -66,7 +68,7 @@ def build_trip_manifest(trip_state: Trip) -> TripManifest:
         "summary": asdict(trip_state.summary),
         "folder_structure": [asdict(folder) for folder in trip_state.folders],
     }
-    return TripManifest("1.0", trip, photos, videos, [], {}, {}, {})
+    return TripManifest("1.0", trip, photos, videos, {}, [], {}, {}, {})
 
 def _manifest_media(item: Photo | Video) -> ManifestMedia:
     """Convert analyzer media to a deterministically identified manifest asset."""

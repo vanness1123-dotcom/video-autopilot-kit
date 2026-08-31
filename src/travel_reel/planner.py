@@ -6,6 +6,7 @@ from typing import Any
 
 from .config import PlannerConfig
 from .story import SECTION_ORDER
+from .events import coherence_metrics
 
 PLANNER_VERSION = "1.0"
 
@@ -85,6 +86,9 @@ def build_reel_plan(
             "shot_id": f"shot-{index:03d}", "shot_index": index, "media_id": item["id"],
             "media_type": kind, "source_path": item.get("path"), "scene_id": entry.get("scene_id"),
             "story_section": entry.get("section"), "candidate_roles": roles,
+            "event_id": entry.get("event_id") or (item.get("event") or {}).get("event_id"),
+            "scene_role": (item.get("event") or {}).get("scene_role"),
+            "hook_teaser": bool(entry.get("hook_teaser")),
             "timeline_start_seconds": start, "timeline_end_seconds": end, "planned_duration_seconds": duration,
             "source_trim_start_seconds": source_in, "source_trim_end_seconds": source_out,
             "transition_intent": config.default_transition, "framing_intent": framing,
@@ -105,16 +109,27 @@ def build_reel_plan(
             sections.append({"section": section, "timeline_start_seconds": section_shots[0]["timeline_start_seconds"],
                              "timeline_end_seconds": section_shots[-1]["timeline_end_seconds"],
                              "duration_seconds": round(section_totals[section], 3), "shot_count": len(section_shots)})
+    metrics = coherence_metrics([str(shot.get("event_id")) for shot in shots if shot.get("event_id")], story.get("hook_teaser_event_id"))
+    event_blocks = []
+    for shot in shots:
+        event_id = shot.get("event_id")
+        if not event_blocks or event_blocks[-1]["event_id"] != event_id:
+            event_blocks.append({"event_id": event_id, "timeline_start_seconds": shot["timeline_start_seconds"],
+                                 "timeline_end_seconds": shot["timeline_end_seconds"], "shot_count": 1,
+                                 "hook_teaser": bool(shot.get("hook_teaser"))})
+        else:
+            event_blocks[-1]["timeline_end_seconds"] = shot["timeline_end_seconds"]
+            event_blocks[-1]["shot_count"] += 1
     plan = {
         "plan_version": "1.0", "planner_version": PLANNER_VERSION,
         "target_duration_seconds": config.target_duration_seconds,
         "actual_duration_seconds": shots[-1]["timeline_end_seconds"], "aspect_ratio": config.aspect_ratio,
-        "shots": shots, "sections": sections,
+        "shots": shots, "sections": sections, "event_blocks": event_blocks,
         "validation": {"valid": True, "duration_tolerance_seconds": config.duration_tolerance_seconds,
                        "continuous_timeline": True, "story_sections_represented": [s["section"] for s in sections]},
         "summary": {"story_candidate_count": len(story["sequence"]), "planned_shot_count": len(shots),
                     "photos": sum(s["media_type"] == "photo" for s in shots),
-                    "videos": sum(s["media_type"] == "video" for s in shots), "dropped_candidates": dropped},
+                    "videos": sum(s["media_type"] == "video" for s in shots), "dropped_candidates": dropped, **metrics},
     }
     validate_reel_plan(plan, manifest, config)
     return plan
@@ -127,6 +142,9 @@ def _choose_subset(candidates: list[dict[str, Any]], config: PlannerConfig) -> t
     present = {c["entry"].get("section") for c in candidates}
     mandatory &= present
     keep_ids: set[str] = set()
+    for event_id in {c["entry"].get("event_id") for c in candidates if c["entry"].get("event_id")}:
+        event_items = [c for c in candidates if c["entry"].get("event_id") == event_id]
+        keep_ids.add(max(event_items, key=_strength)["item"]["id"])
     for section in mandatory:
         section_items = [c for c in candidates if c["entry"].get("section") == section]
         best = max(section_items, key=_strength)

@@ -353,6 +353,8 @@ Vision Analysis
     ↓
 Media Scoring
     ↓
+Event / Scene Intelligence
+    ??
 Media Selection
     ↓
 Scene Construction

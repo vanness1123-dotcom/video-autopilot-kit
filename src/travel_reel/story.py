@@ -63,6 +63,8 @@ def build_story(manifest: dict[str, Any], config: StoryConfig) -> dict[str, Any]
     alternate_uses = _add_justified_alternates(pool, alternate_ids, by_id, config)
     if not pool:
         raise StoryPrerequisiteError("Story candidate pool is empty")
+    if isinstance(manifest.get("events"), dict) and manifest["events"].get("items"):
+        return _build_event_story(manifest, pool, alternate_uses, by_id, config)
 
     hook = max(pool, key=lambda item: (_hook_strength(item), _stable_inverse_id(item)))
     closing_candidates = [item for item in pool if item["id"] != hook["id"]]
@@ -135,6 +137,70 @@ def build_story(manifest: dict[str, Any], config: StoryConfig) -> dict[str, Any]
         },
     }
     return story
+
+
+def _build_event_story(manifest: dict[str, Any], pool: list[dict[str, Any]], alternate_uses: list[dict[str, str]],
+                       by_id: dict[str, dict[str, Any]], config: StoryConfig) -> dict[str, Any]:
+    """Build one optional hook teaser followed by contiguous Event blocks."""
+    hook = max(pool, key=lambda item: (_hook_strength(item), _stable_inverse_id(item)))
+    pool_ids = {item["id"] for item in pool}
+    event_defs = [event for event in manifest["events"]["items"] if isinstance(event, dict)]
+    blocks = []
+    for event in event_defs:
+        members = [by_id[mid] for mid in event.get("media_ids", []) if mid in pool_ids and mid in by_id]
+        if members: blocks.append((event, members))
+    assigned = {item["id"] for _, members in blocks for item in members}
+    for item in pool:
+        if item["id"] not in assigned:
+            blocks.append(({"event_id": "event-unassigned", "label": "travel_event"}, [item]))
+    hook_event = (hook.get("event") or {}).get("event_id")
+    hook_teaser = bool(blocks and blocks[0][0].get("event_id") != hook_event)
+    scenes = [_section("hook", [hook], config, 1)]
+    scenes[0]["event_id"] = hook_event; scenes[0]["hook_teaser"] = hook_teaser
+    for event, members in blocks:
+        remaining = [item for item in members if item["id"] != hook["id"]]
+        if not remaining: continue
+        role = "arrival" if event.get("dominant_category") == "transportation" else (
+            "experience" if event.get("dominant_category") in {"food", "theme_park", "nightlife"} else "exploration")
+        section = _section(role, remaining, config, len(scenes) + 1)
+        section.update(event_id=event.get("event_id"), title=str(event.get("label") or section["title"]).replace("_", " ").title())
+        scenes.append(section)
+    if len(scenes) == 1:  # one-media small trip
+        closing = hook
+    else:
+        last_scene = scenes[-1]
+        last_items = [by_id[mid] for mid in last_scene["media_ids"]]
+        closing = max(last_items, key=lambda item: (_closing_strength(item), _stable_inverse_id(item)))
+        last_scene["media_ids"].remove(closing["id"])
+        if not last_scene["media_ids"]: scenes.pop()
+        closing_scene = _section("closing", [closing], config, len(scenes) + 1)
+        closing_scene["event_id"] = (closing.get("event") or {}).get("event_id")
+        scenes.append(closing_scene)
+    alternate_reason_by_id = {entry["media_id"]: entry["reason"] for entry in alternate_uses}
+    sequence = []
+    for scene in scenes:
+        for media_id in scene["media_ids"]:
+            item = by_id[media_id]
+            reasons = _item_reasons(item, scene["role"]) + [f"event_block:{scene.get('event_id')}"]
+            sequence.append({"position": len(sequence)+1, "media_id": media_id, "scene_id": scene["scene_id"],
+                             "section": scene["role"], "editorial_role": scene["role"],
+                             "event_id": scene.get("event_id"),
+                             "hook_teaser": bool(scene.get("hook_teaser")),
+                             "source_selection": "alternate" if media_id in alternate_reason_by_id else "primary",
+                             "reasons": reasons})
+    categories = Counter(_category(by_id[entry["media_id"]]) for entry in sequence)
+    photo_count = sum(entry["media_id"].startswith("photo-") for entry in sequence)
+    return {"story_version": STORY_VERSION, "provider": DeterministicStoryProvider.name,
+            "title": _trip_title(manifest), "style": config.style,
+            "structure": [scene["role"] for scene in scenes], "hook_media_id": hook["id"],
+            "highlight_media_ids": [], "closing_media_id": closing["id"], "scenes": scenes,
+            "event_order": list(dict.fromkeys(entry["event_id"] for entry in sequence if entry.get("event_id"))),
+            "hook_teaser_event_id": hook_event if hook_teaser else None,
+            "sequence": sequence, "alternate_uses": alternate_uses,
+            "summary": {"item_count": len(sequence), "section_count": len(scenes),
+                        "primary_count": len(sequence)-len(alternate_uses), "alternate_count": len(alternate_uses),
+                        "photos": photo_count, "videos": len(sequence)-photo_count,
+                        "categories": dict(sorted(categories.items()))}}
 
 
 def validate_story(story: object, manifest: dict[str, Any]) -> None:

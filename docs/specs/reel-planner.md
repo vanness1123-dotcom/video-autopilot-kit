@@ -1,6 +1,8 @@
 # AI Travel Reel Generator — Reel Planner Specification
 
 **Document Version:** 1.0
+
+> Sprint 7.5 Planner reduction preserves Event representatives and block order. Plans expose `event_id`, `scene_role`, `event_switch_count`, and `event_fragmentation_count`; an explicitly marked opening teaser is exempt from fragmentation.
 **Status:** Baseline
 **Component:** Reel Planner
 **Related Documents:** `system-architecture.md`, `trip-manifest.md`, `media-selector.md`, `story-engine.md`, `renderer.md`

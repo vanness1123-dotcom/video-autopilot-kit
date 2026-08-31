@@ -100,6 +100,22 @@ class SelectionConfig:
 
 
 @dataclass(frozen=True)
+class EventConfig:
+    """Small deterministic policy surface for event boundaries."""
+
+    semantic_similarity_threshold: float = 0.19
+    filename_sequence_gap: int = 12
+    time_gap_seconds: float = 14400.0
+    strong_semantic_threshold: float = 0.30
+
+    def __post_init__(self) -> None:
+        if not 0 <= self.semantic_similarity_threshold <= self.strong_semantic_threshold <= 1:
+            raise ValueError("Event similarity thresholds must satisfy 0 <= semantic <= strong <= 1")
+        if self.filename_sequence_gap < 0 or self.time_gap_seconds < 0:
+            raise ValueError("Event sequence and time gaps cannot be negative")
+
+
+@dataclass(frozen=True)
 class StoryConfig:
     """Small deterministic policy surface for narrative construction."""
 
@@ -256,6 +272,16 @@ def load_selection_config(path: Path | None = None) -> SelectionConfig:
         if key in known
     }
     return SelectionConfig(**updates)
+
+
+def load_event_config(path: Path | None = None) -> EventConfig:
+    """Load the dependency-free ``events:`` section."""
+    values = _yaml_section_values(_config_text(path), "events")
+    updates = {
+        key: int(value) if key == "filename_sequence_gap" else float(value)
+        for key, value in values.items() if key in EventConfig.__dataclass_fields__
+    }
+    return EventConfig(**updates)
 
 
 def load_story_config(path: Path | None = None) -> StoryConfig:

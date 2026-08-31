@@ -22,11 +22,13 @@ from .media_preprocess import (
     source_fingerprint,
 )
 from .planner import build_reel_plan
+from .events import group_manifest_events
 from .renderer import render_reel
 from .models import Trip
 from .scoring import score_manifest
 from .selector import select_manifest
 from .story import DeterministicStoryProvider, StoryProvider, validate_story
+from .config import EventConfig
 from .vision import (
     VisionError,
     VisionProvider,
@@ -135,6 +137,21 @@ def run_scoring(trip_folder: Path, config: ScoringConfig) -> dict[str, object]:
     advance_manifest_version(manifest, "1.2")
     save_trip_manifest_atomic(manifest_path, manifest)
     return summary
+
+
+def run_events(trip_folder: Path, config: EventConfig) -> dict[str, object]:
+    """Recompute Event-owned state and invalidate every dependent editorial artifact."""
+    root = trip_folder.resolve()
+    manifest_path = root / "output" / "trip_manifest.json"
+    manifest = load_trip_manifest(manifest_path)
+    state = group_manifest_events(manifest, config)
+    for key in ("selection", "story", "reel_plan", "render"):
+        manifest.pop(key, None)
+    for item in [entry for key in ("photos", "videos") for entry in manifest.get(key, []) if isinstance(entry, dict)]:
+        item.pop("selection", None); item.pop("selected", None)
+    advance_manifest_version(manifest, "1.6")
+    save_trip_manifest_atomic(manifest_path, manifest)
+    return state
 
 
 def run_selection(trip_folder: Path, config: SelectionConfig) -> dict[str, object]:

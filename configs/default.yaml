@@ -18,6 +18,12 @@ scoring:
   emotion: 0.10
   vertical_suitability: 0.10
 
+events:
+  semantic_similarity_threshold: 0.19
+  filename_sequence_gap: 12
+  time_gap_seconds: 14400
+  strong_semantic_threshold: 0.30
+
 selection:
   primary_target: 20
   alternate_target: 10
@@ -44,7 +50,7 @@ planner:
   aspect_ratio: "9:16"
   duration_tolerance_seconds: 0.01
   min_shots: 15
-  max_shots: 18
+  max_shots: 24
   photo_min_duration: 1.0
   photo_default_duration: 1.8
   photo_max_duration: 2.5

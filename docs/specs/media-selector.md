@@ -1,6 +1,8 @@
 # AI Travel Reel Generator — Media Selector Specification
 
 **Document Version:** 1.0
+
+> Sprint 7.5 selection consumes Event membership, preserves representatives across distinct Events, and limits duplicate suppression to members of the same known Event.
 **Status:** Baseline
 **Component:** Media Selector
 **Related Documents:** `system-architecture.md`, `trip-manifest.md`, `vision-provider.md`, `scoring-system.md`
