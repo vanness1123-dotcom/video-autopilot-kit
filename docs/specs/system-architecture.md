@@ -1136,3 +1136,64 @@ must be treated as architecture changes rather than ordinary feature changes.
 The intended product architecture is:
 
 > **AI understands and directs the journey; deterministic software produces the film.**
+# Sprint 8 editorial stage
+
+The pipeline order is Analyzer → Vision → Scoring → Event / Scene Intelligence → Creative Director → Selection → Story → Reel Planner → Renderer. Creative Director chooses strategy before Selection chooses survivors; Story orders them; Planner assigns exact timing; Renderer executes it. Future Music/Beat and Template engines may extend persisted intent.
+# Adaptive editorial pipeline
+
+Creative Direction now owns the jointly feasible duration and shot-budget decision. Selection and
+Story consume the resolved quality budget; Planner consumes the resolved duration and remains
+authoritative for exact timing. The next contracts consume intent in order: Music & Beat
+Intelligence, Dynamic Template Engine, Subtitle/Motion Graphics, then Advanced Renderer and QA.
+
+Music Intelligence sits after Story and before Planner. It may negotiate duration within Director
+bounds and supplies versioned beats, phrases, energy, Story mapping, and synchronization anchors.
+
+Licensed Music Intake precedes Music Intelligence when automatic selection is requested. The
+quality-first local flow is `direct -> select -> story -> music-select -> plan -> render`.
+`music-select` discovers only managed local candidates, reuses cached per-track analysis, persists
+an inspectable ranking, and publishes the winning analysis to Planner. Selection changes invalidate
+Plan and Render, never Analyzer, Vision, Scores, or Events. No internet acquisition component exists.
+# Sprint 10.2 music stage
+
+Cached per-track source analysis feeds cheap deterministic tempo interpretation and arrangement scoring. Arrangement policy changes invalidate Plan and Render only; raw analysis cache identity excludes arrangement policy. FFmpeg assembly precedes Planner/Renderer handoff and never modifies managed sources.
+
+# Sprint 11.1 Dynamic Template Engine
+
+The additive pipeline boundary is Creative Director + Story + Events + Music anchors + Reel Plan -> Template Resolver -> Visual Plan -> future Motion Renderer. Story owns narrative, Planner owns editorial timing, Template Engine owns presentation, and Renderer owns execution. The current Renderer continues to consume Reel Plan directly and does not require Visual Plan.
+
+# Sprint 11.2a Static Layout Engine
+
+The renderer-independent pipeline now separates semantic template sequencing from spatial resolution: Reel Plan -> Template Sequencer -> Visual Plan -> Layout Resolver -> resolved spatial layouts. `src/travel_reel/layout.py` owns normalized geometry, slot traceability, static hierarchy, fit/clipping intent, composition safe areas, and background intent. It does not change editorial timing or grouping. Motion, overlays, and Renderer/FFmpeg execution remain downstream, and the current Renderer does not consume resolved layouts.
+# Sprint 11.3a Motion boundary
+
+The explicit visual chain is Template → Layout → Motion → future Overlay → Render.
+Story owns WHAT, Reel Planner WHEN, Template grouping, Layout WHERE, and Motion
+movement inside inherited visibility. Renderer execution remains deferred to 11.7.
+See [Motion Engine](motion-engine.md) for resolved_motion version 1.0, immutable
+visibility/geometry, pure planning, and narrow dependency invalidation.
+
+## Sprint 11.4b-a Typography foundation
+
+Overlay owns an internal Typography subsystem. `overlay-plan` preserves upstream
+contracts and optionally attaches `resolved_typography` version 1.0 to each text
+Overlay. `resolved_overlay` stays version 1.0; actual typography persistence advances
+Manifest to 1.12. Older records without typography remain valid. Font identity is
+SHA-256 plus collection face and logical ID, never an authoritative machine path.
+Whole-string cmap coverage precedes Pillow/FreeType single-line measurement.
+Preferred placement is not collision-certified; `validation.safe` does not imply
+full static/Motion collision safety. Font/content/profile/backend changes require
+re-resolution and invalidate render metadata when output changes. Renderer remains
+deferred. See [Overlay/Typography Engine](overlay-typography-engine.md).
+
+## Sprint 11.4b-b measured text layout
+
+Manifest 1.13 adds optional `resolved_typography.measured_layout` with policy
+`measured_lines.v1`. Overlay and Typography remain v1.0. The child owns display
+lines, fitted size, normalized baselines/boxes and container-fit evidence;
+legacy top-level single-line metrics retain their original meaning. Content stays
+unchanged. Bounded CJK/Latin wrapping, readable fitting, conservative ellipsis,
+and omission happen inside the existing preferred container. Media/Motion/Overlay
+collision safety and Renderer execution remain deferred. Old 1.12 records load
+and may be re-resolved using only `overlay-plan`. See the
+[typography specification](overlay-typography-engine.md).

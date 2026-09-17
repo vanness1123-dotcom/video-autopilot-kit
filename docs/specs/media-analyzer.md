@@ -891,8 +891,7 @@ This preserves deterministic ingestion.
 Potential post-baseline improvements:
 
 * camera make/model extraction
-* exact dimensions
-* normalized orientation
+* additional dimension provenance (basic display dimensions and orientation implemented in 11.2c)
 * complete video probe metadata
 * HDR detection
 * exact duplicate hash
@@ -932,3 +931,23 @@ Its contract is:
 > Discover the travel media once, extract trustworthy source facts, and make those facts available to every later stage without editorial interpretation.
 
 AI begins after the Analyzer boundary.
+# Sprint 11.2c objective dimension extraction
+
+Normal deterministic analysis populates original display-oriented width/height
+and portrait/landscape/square orientation in domain media objects. Both
+`analysis.json` and canonical manifest records serialize these fields.
+
+Photos use original Pillow image dimensions with EXIF axes exchanged only for
+orientations 5, 6, 7, and 8. Mirroring-only orientations 2 and 4 retain their axes.
+HEIC/HEIF registers the existing pillow-heif decoder when available, then falls
+back to a full-resolution auto-oriented FFmpeg decode in a cleaned temporary
+directory. No thumbnail dimensions or AI are used, and source files are untouched.
+Videos reuse ffprobe dimensions and rotation, exchanging axes for +/-90-degree
+rotations (including equivalent quarter turns). Non-quarter-turn rotations fail
+explicitly rather than guessing their bounding box.
+
+Extraction failures produce Analyzer warnings and leave optional dimensions
+unknown. Existing manifests use the explicit `enrich-media-metadata` command
+described in the Trip Manifest specification; never rerun Analyzer to migrate
+expensive/editorial state. Canonical orientation uses strict axis comparison;
+Layout's near-square tolerance remains a separate spatial selection policy.

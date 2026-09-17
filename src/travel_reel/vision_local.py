@@ -36,6 +36,8 @@ class LocalVisionProvider:
         self.endpoint = endpoint.rstrip("/")
         self.timeout_seconds = timeout_seconds
         self.retries = max(0, retries)
+        self.last_recovery_attempted = False
+        self.last_recovered = False
 
     def analyze_photo(self, media_id: str, image: Path) -> VisionResult:
         return self._analyze(media_id, [image], _PHOTO_PROMPT)
@@ -49,6 +51,8 @@ class LocalVisionProvider:
         return self._analyze(media_id, frames, f"{_VIDEO_PROMPT}\nFrame timestamps: {timestamp_text}")
 
     def _analyze(self, media_id: str, images: list[Path], prompt: str) -> VisionResult:
+        self.last_recovery_attempted = False
+        self.last_recovered = False
         encoded_images = [base64.b64encode(path.read_bytes()).decode("ascii") for path in images]
         request_payload = {
             "model": self.model,
@@ -64,12 +68,27 @@ class LocalVisionProvider:
         }
         try:
             payload = _decode_ollama_content(self._post(request_payload))
-        except VisionResponseValidationError:
+            _validate_structured_payload(payload)
+            result = normalize_vision_result(payload)
+        except VisionResponseValidationError as primary_error:
+            self.last_recovery_attempted = True
             retry_payload = copy.deepcopy(request_payload)
-            retry_payload["format"] = _BOUNDED_OLLAMA_SCHEMA
-            retry_payload["messages"][0]["content"] += _STRUCTURED_RETRY_INSTRUCTION
-            payload = _decode_ollama_content(self._post(retry_payload))
-        return normalize_vision_result(payload)
+            retry_payload["format"] = _COMPACT_OLLAMA_SCHEMA
+            retry_payload["options"]["num_predict"] = 320
+            retry_payload["messages"][0]["content"] = (
+                f"Media ID: {media_id}\n{_COMPACT_RECOVERY_PROMPT}"
+            )
+            try:
+                payload = _decode_ollama_content(self._post(retry_payload))
+                _validate_structured_payload(payload)
+                result = normalize_vision_result(payload)
+            except VisionResponseValidationError as retry_error:
+                raise VisionResponseValidationError(
+                    f"Structured recovery failed after exactly one retry; "
+                    f"primary=({primary_error}); recovery=({retry_error})"
+                ) from retry_error
+            self.last_recovered = True
+        return result
 
     def _post(self, payload: dict[str, Any]) -> dict[str, Any]:
         body = json.dumps(payload).encode("utf-8")
@@ -111,11 +130,10 @@ be omitted or left empty unless meaningful. Use the supplied controlled vocabula
 _PHOTO_PROMPT = _BASE_PROMPT + "\nAnalyze this single photo."
 _VIDEO_PROMPT = _BASE_PROMPT + "\nThe images are ordered representative frames from one video. Aggregate them into one video-level observation and mention visible change or action only when supported across frames."
 
-_STRUCTURED_RETRY_INSTRUCTION = (
-    "\nYour previous response was invalid or incomplete. Return the complete JSON object again. "
-    "Return at most 16 unique concise tags and at most 20 unique concise objects. "
-    "Never repeat list items."
-)
+_COMPACT_RECOVERY_PROMPT = """Analyze the supplied travel image(s). Return one complete JSON object only.
+Be extremely concise: description <= 120 characters, activity <= 30 characters, tags <= 6,
+objects <= 8, confidence <= 4 entries. Never repeat items. Preserve every required field.
+Use null, false, zero, or an empty array/object when uncertain. Do not explain or think aloud."""
 
 _OLLAMA_SCHEMA = {
     "type": "object",
@@ -174,9 +192,12 @@ _OLLAMA_SCHEMA = {
     },
 }
 
-_BOUNDED_OLLAMA_SCHEMA = copy.deepcopy(_OLLAMA_SCHEMA)
-_BOUNDED_OLLAMA_SCHEMA["properties"]["tags"]["maxItems"] = 16
-_BOUNDED_OLLAMA_SCHEMA["properties"]["objects"]["maxItems"] = 20
+_COMPACT_OLLAMA_SCHEMA = copy.deepcopy(_OLLAMA_SCHEMA)
+_COMPACT_OLLAMA_SCHEMA["properties"]["description"]["maxLength"] = 120
+_COMPACT_OLLAMA_SCHEMA["properties"]["activity"]["maxLength"] = 30
+_COMPACT_OLLAMA_SCHEMA["properties"]["tags"]["maxItems"] = 6
+_COMPACT_OLLAMA_SCHEMA["properties"]["objects"]["maxItems"] = 8
+_COMPACT_OLLAMA_SCHEMA["properties"]["confidence"]["maxProperties"] = 4
 
 
 def _decode_ollama_content(raw: object) -> dict[str, Any]:
@@ -208,3 +229,26 @@ def _decode_ollama_content(raw: object) -> dict[str, Any]:
             f"(done_reason={done_reason!r}, type={type(payload).__name__})"
         )
     return payload
+
+
+def _validate_structured_payload(payload: dict[str, Any]) -> None:
+    """Reject incomplete provider objects before normalization can supply safe defaults."""
+    required = set(_OLLAMA_SCHEMA["required"])
+    missing = sorted(required.difference(payload))
+    if missing:
+        raise VisionResponseValidationError(
+            f"Ollama structured JSON is missing required fields: {', '.join(missing)}"
+        )
+    expected = {
+        "tags": list,
+        "people": dict,
+        "objects": list,
+        "landmark_hint": dict,
+        "quality_observations": dict,
+        "confidence": dict,
+    }
+    invalid = [key for key, kind in expected.items() if not isinstance(payload[key], kind)]
+    if invalid:
+        raise VisionResponseValidationError(
+            f"Ollama structured JSON has invalid field types: {', '.join(invalid)}"
+        )

@@ -11,6 +11,8 @@ config.py
 *.mp3
 *.wav
 *.m4a
+*.aac
+*.flac
 *.png
 *.jpg
 *.jpeg
@@ -47,3 +49,10 @@ Thumbs.db
 _repro*
 _scratch*
 *.repro.py
+music_library/tracks/*
+!music_library/tracks/.gitkeep
+/examples/IMG_0280.HEIC
+/examples/VisionBenchmark/Photos/
+/examples/VisionBenchmark/Videos/
+/examples/VisionBenchmark/output/
+/vision_retry.log

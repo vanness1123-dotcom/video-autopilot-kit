@@ -24,6 +24,16 @@ events:
   time_gap_seconds: 14400
   strong_semantic_threshold: 0.30
 
+creative_director:
+  style: auto
+  duration_mode: adaptive
+  min_duration_seconds: 30
+  max_duration_seconds: 90
+  target_duration_seconds: 40
+  allow_photo_burst: true
+  allow_beat_montage: true
+  event_continuity: strong
+
 selection:
   primary_target: 20
   alternate_target: 10
@@ -45,6 +55,24 @@ story:
   max_alternates: 2
   chronology_min_ratio: 0.70
 
+music:
+  sample_rate: 22050
+  window_ms: 20
+  bpm_min: 60
+  bpm_max: 180
+  minimum_tempo_confidence: 0.12
+  cache_dir_name: .travel_reel_cache/music
+  library_path: music_library
+  selection_mode: auto
+  max_arrangement_tracks: 3
+  max_arrangement_pool: 8
+  crossfade_seconds: 0.5
+  max_crossfade_seconds: 2.0
+  multi_track_decision_margin: 3.0
+  track_switch_penalty: 3.0
+  arrangement_output_filename: music_arrangement.m4a
+  assembly_duration_tolerance_seconds: 0.12
+
 planner:
   target_duration_seconds: 40.0
   aspect_ratio: "9:16"
@@ -63,6 +91,20 @@ planner:
   default_transition: cut
   default_framing: center
 
+template:
+  enabled: true
+  default_template: travel_daily_record_v1
+  avoid_immediate_repeat: true
+  max_complex_blocks_in_row: 2
+  motion_enabled: true
+  typography_enabled: true
+  decorations_enabled: true
+
+layout:
+  enabled: true
+  safe_area_margin: 0.04
+  default_background: canvas_light
+
 renderer:
   width: 1080
   height: 1920
@@ -79,3 +121,11 @@ renderer:
   photo_motion: none
   background_mode: black
   ffmpeg_loglevel: error
+motion:
+  enabled: true
+
+# Font paths remain local inputs; no automatic discovery scan or downloads.
+typography:
+  design_width: 1080
+  design_height: 1920
+  system_fonts: true

@@ -64,6 +64,7 @@ def render_reel(
     output_dir.mkdir(parents=True, exist_ok=True)
     final_output = output_dir / config.output_filename
     pending_output = output_dir / f"{Path(config.output_filename).stem}.tmp.mp4"
+    silent_output = output_dir / f"{Path(config.output_filename).stem}.silent.tmp.mp4"
     temp_root = (root / config.temp_directory_name).resolve()
     _assert_within(root, temp_root, "Temporary render directory escapes trip folder")
     if temp_root.exists():
@@ -86,8 +87,17 @@ def render_reel(
         concat_file.write_text(
             "".join(f"file '{_concat_escape(segment, ffmpeg)}'\n" for segment in segments), encoding="utf-8"
         )
-        concat_command = build_concat_command(ffmpeg, concat_file, pending_output, config)
+        arrangement = manifest.get("music_arrangement") if isinstance(manifest.get("music_arrangement"), dict) else {}
+        assembly = arrangement.get("assembly") if isinstance(arrangement.get("assembly"), dict) else {}
+        audio_path = Path(str(assembly.get("path"))).resolve() if assembly.get("status") == "assembled" else None
+        concat_target = silent_output if audio_path else pending_output
+        concat_command = build_concat_command(ffmpeg, concat_file, concat_target, config)
         _execute(run, concat_command, "final concatenation")
+        if audio_path:
+            _assert_within(root, audio_path, "Music arrangement escapes trip folder")
+            if not audio_path.is_file(): raise RendererSourceError("Assembled music artifact is missing")
+            _execute(run, build_audio_mux_command(ffmpeg, silent_output, audio_path, pending_output,
+                                                  float(plan["actual_duration_seconds"]), config), "music mux")
         probe = probe_render_output(pending_output, ffprobe=ffprobe, runner=run)
         validate_render_output(pending_output, probe, plan, config, len(segments))
         os.replace(pending_output, final_output)
@@ -95,10 +105,12 @@ def render_reel(
         return render_state, final_output
     except Exception:
         pending_output.unlink(missing_ok=True)
+        silent_output.unlink(missing_ok=True)
         raise
     finally:
         if not config.keep_temp and temp_root.exists():
             shutil.rmtree(temp_root)
+        silent_output.unlink(missing_ok=True)
 
 
 def validate_render_plan(plan: object, config: RendererConfig) -> None:
@@ -209,6 +221,15 @@ def build_concat_command(ffmpeg: str, concat_file: Path, output: Path, config: R
     ]
 
 
+def build_audio_mux_command(ffmpeg: str, video: Path, audio: Path, output: Path,
+                            duration: float, config: RendererConfig) -> list[object]:
+    """Copy planned video and encode bounded AAC without extending its duration."""
+    return [ffmpeg, "-y", "-hide_banner", "-loglevel", config.ffmpeg_loglevel,
+            "-i", video, "-i", audio, "-map", "0:v:0", "-map", "1:a:0", "-c:v", "copy",
+            "-c:a", config.audio_codec, "-b:a", config.audio_bitrate, "-af", f"atrim=duration={duration:.3f},asetpts=PTS-STARTPTS",
+            "-t", f"{duration:.3f}", "-movflags", "+faststart", output]
+
+
 def probe_render_output(
     output: Path, *, ffprobe: str = "ffprobe", runner: CommandRunner | None = None,
 ) -> dict[str, Any]:
@@ -280,7 +301,8 @@ def build_render_state(
         "width": probe["width"], "height": probe["height"], "fps": round(float(probe["fps"]), 3),
         "video_codec": probe["video_codec"], "pixel_format": probe["pixel_format"],
         "shot_count": len(shots), "photo_count": sum(s["media_type"] == "photo" for s in shots),
-        "video_count": sum(s["media_type"] == "video" for s in shots), "audio": False,
+        "video_count": sum(s["media_type"] == "video" for s in shots),
+        "audio": bool(plan.get("music_intelligence", {}).get("consumed")),
         "render_metadata": {"transition_types": sorted({s["transition_intent"] for s in shots}),
                             "photo_motion": config.photo_motion, "background_mode": config.background_mode},
     }

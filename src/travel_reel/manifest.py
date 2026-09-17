@@ -22,6 +22,9 @@ class ManifestMedia:
     description: None = None
     objects: tuple[str, ...] = ()
     emotion: None = None
+    width: int | None = None
+    height: int | None = None
+    orientation: str | None = None
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready representation with list-valued placeholders."""
@@ -74,7 +77,8 @@ def _manifest_media(item: Photo | Video) -> ManifestMedia:
     """Convert analyzer media to a deterministically identified manifest asset."""
     gps = asdict(item.gps) if item.gps else None
     captured_at = item.capture_time.isoformat() if item.capture_time else None
-    return ManifestMedia(item.id, item.path.as_posix(), item.size_bytes, captured_at, gps)
+    return ManifestMedia(item.id, item.path.as_posix(), item.size_bytes, captured_at, gps,
+                         width=item.width, height=item.height, orientation=item.orientation)
 
 
 def load_trip_manifest(path: Path) -> dict[str, Any]:
@@ -89,6 +93,12 @@ def load_trip_manifest(path: Path) -> dict[str, Any]:
         raise ValueError("Invalid Trip Manifest: missing trip object")
     if not isinstance(payload.get("photos"), list) or not isinstance(payload.get("videos"), list):
         raise ValueError("Invalid Trip Manifest: photos/videos must be arrays")
+    visual = payload.get('visual_plan')
+    if isinstance(visual,dict) and any(isinstance(b.get('resolved_overlay'),dict) and
+            ('version' in b['resolved_overlay'] or 'placement_resolution' in b['resolved_overlay'])
+            for b in visual.get('blocks',[])):
+        from .overlay import validate_overlay_plan
+        validate_overlay_plan(visual,visual,payload)
     return payload
 
 

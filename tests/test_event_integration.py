@@ -40,6 +40,13 @@ class EventIntegrationTests(unittest.TestCase):
         manifest = event_manifest(); select_manifest(manifest, SelectionConfig(primary_target=18, alternate_target=2, min_video_target=3, max_video_target=4, duplicate_similarity_without_time=.9))
         story = build_story(manifest, StoryConfig(max_story_items=20)); validate_story(story, manifest)
         manifest["story"] = story
+        manifest["music_analysis"] = {"version": "1.0", "duration_seconds": 45.0,
+            "source": {"cache_key": "event-music"}, "tempo": {"bpm": 120},
+            "duration_alignment": {"music_aligned_duration": 40.0},
+            "beats": [{"time": value+.05} for value in range(2, 40, 2)],
+            "phrases": [{"start": 0.0, "end": 45.0}], "sync_anchors": [], "story_mapping": []}
+        self.assertLess(story["summary"]["section_count"], story["summary"]["item_count"])
+        self.assertLessEqual(story["summary"]["section_count"], 6)
         self.assertEqual(coherence_metrics([e["event_id"] for e in story["sequence"]], story.get("hook_teaser_event_id"))["event_fragmentation_count"], 0)
         plan = build_reel_plan(manifest, PlannerConfig(min_shots=12, max_shots=18))
         self.assertEqual(plan["summary"]["event_fragmentation_count"], 0)

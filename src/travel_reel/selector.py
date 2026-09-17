@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import math
 import re
+from dataclasses import replace
 from collections import Counter
 from datetime import datetime
 from typing import Any
@@ -18,7 +19,22 @@ def select_manifest(manifest: dict[str, Any], config: SelectionConfig) -> dict[s
     candidates = _eligible_media(manifest)
     groups, suppressed_by = group_duplicates(candidates, config)
     available = [item for item in candidates if item["id"] not in suppressed_by]
-    primary = _choose(available, min(config.primary_target, len(available)), config, [])
+    direction = manifest.get("creative_direction") if isinstance(manifest.get("creative_direction"), dict) else {}
+    budget = direction.get("media_budget", {}) if isinstance(direction.get("media_budget"), dict) else {}
+    quality_floor = budget.get("minimum_score")
+    if isinstance(quality_floor, (int, float)):
+        quality_available = [item for item in available if _score(item) >= float(quality_floor)]
+        if quality_available:
+            available = quality_available
+    target_primary = min(int(budget.get("target_shots", config.primary_target)), len(available))
+    video_range = budget.get("preferred_videos", {}) if isinstance(budget.get("preferred_videos"), dict) else {}
+    if video_range:
+        video_max = min(target_primary, int(video_range.get("maximum", config.max_video_target)))
+        video_min = min(video_max, int(video_range.get("minimum", config.min_video_target)))
+        config = replace(config, primary_target=max(1, target_primary), min_video_target=video_min, max_video_target=video_max)
+    event_targets = direction.get("event_strategy", {}) if isinstance(direction.get("event_strategy"), dict) else {}
+    primary = _event_seed(available, event_targets, target_primary, config)
+    primary.extend(_choose([x for x in available if x not in primary], target_primary-len(primary), config, primary))
     primary_ids = {item["id"] for item in primary}
     alternate_available = [item for item in available if item["id"] not in primary_ids]
     alternates = _choose(
@@ -65,7 +81,7 @@ def select_manifest(manifest: dict[str, Any], config: SelectionConfig) -> dict[s
     alternate_plain = [_plain(item) for item in alternates]
     selection = {
         "version": SELECTOR_VERSION,
-        "target_primary": config.primary_target,
+        "target_primary": target_primary,
         "target_alternate": config.alternate_target,
         "primary_ids": [item["id"] for item in primary],
         "alternate_ids": [item["id"] for item in alternates],
@@ -75,12 +91,36 @@ def select_manifest(manifest: dict[str, Any], config: SelectionConfig) -> dict[s
             for group_id, ids in sorted(groups.items())
         ],
         "summary": _summary(primary_plain, alternate_plain),
+        "creative_direction": {"consumed": bool(direction), "style": direction.get("style"),
+            "requested_target": budget.get("target_shots"), "event_target_shortfalls": _event_shortfalls(primary, event_targets)},
     }
     for item in all_items:
         item.pop("_media_type", None)
         item.pop("_ordinal_bucket", None)
     manifest["selection"] = selection
     return selection
+
+
+def _event_seed(available: list[dict[str, Any]], targets: dict[str, Any], target: int, config: SelectionConfig) -> list[dict[str, Any]]:
+    chosen: list[dict[str, Any]] = []
+    ordered = sorted(targets.items(), key=lambda pair: (-float(pair[1].get("importance_score", 0)), pair[0]))
+    while len(chosen) < target:
+        progressed = False
+        for event_id, strategy in ordered:
+            wanted = min(int(strategy.get("target_representation", 0)), target)
+            current = sum((x.get("event") or {}).get("event_id") == event_id for x in chosen)
+            pool = [x for x in available if x not in chosen and (x.get("event") or {}).get("event_id") == event_id]
+            if current < wanted and pool and len(chosen) < target:
+                chosen.extend(_choose(pool, 1, config, chosen)); progressed = True
+        if not progressed: break
+    return chosen
+
+
+def _event_shortfalls(primary: list[dict[str, Any]], targets: dict[str, Any]) -> list[dict[str, Any]]:
+    counts = Counter((x.get("event") or {}).get("event_id") for x in primary)
+    return [{"event_id": eid, "target": int(s.get("target_representation", 0)), "actual": counts[eid],
+             "reason": "insufficient non-duplicate eligible media"}
+            for eid,s in sorted(targets.items()) if counts[eid] < int(s.get("target_representation", 0))]
 
 
 def group_duplicates(

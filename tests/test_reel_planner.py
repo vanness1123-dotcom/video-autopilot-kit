@@ -101,14 +101,63 @@ class ReelPlannerTests(unittest.TestCase):
             root = Path(directory); (root / "output").mkdir()
             payload = fixture(); path = root / "output" / "trip_manifest.json"
             path.write_text(json.dumps(payload), encoding="utf-8")
-            upstream = copy.deepcopy({key: payload[key] for key in ("photos", "videos", "story", "selection", "timeline", "render")})
+            upstream = copy.deepcopy({key: payload[key] for key in ("photos", "videos", "story", "selection", "timeline")})
             first = run_planner(root, PlannerConfig())
             persisted = json.loads(path.read_text(encoding="utf-8"))
             self.assertEqual(persisted["manifest_version"], "1.4")
             self.assertEqual({key: persisted[key] for key in upstream}, upstream)
+            self.assertNotIn("render", persisted)
             second = run_planner(root, PlannerConfig())
             self.assertEqual(first, second)
             self.assertEqual(json.loads(path.read_text(encoding="utf-8"))["reel_plan"], first)
+
+    def test_real_adaptive_32_shot_bounds_are_feasible_for_40_seconds(self):
+        manifest = fixture(32, videos=(0, 5, 10, 15, 20, 25))
+        manifest["creative_direction"] = {
+            "style": "beat_montage", "pacing": {"overall": "fast"},
+            "media_budget": {"target_shots": 32, "minimum_shots": 26, "maximum_shots": 38},
+            "template_strategy": {"primary": "beat_montage"},
+        }
+        plan = build_reel_plan(manifest, PlannerConfig())
+        self.assertEqual(plan["summary"]["planned_shot_count"], 32)
+        self.assertEqual(plan["summary"]["photos"], 26)
+        self.assertEqual(plan["summary"]["videos"], 6)
+        self.assertEqual(plan["actual_duration_seconds"], 40.0)
+
+    def test_planner_consumes_director_resolved_duration_not_config_default(self):
+        manifest = fixture(32, videos=(0, 5, 10, 15, 20, 25))
+        manifest["creative_direction"] = {
+            "style": "beat_montage", "pacing": {"overall": "fast"},
+            "duration_strategy": {"mode": "adaptive", "resolved_seconds": 58.0},
+            "media_budget": {"target_shots": 32, "minimum_shots": 26, "maximum_shots": 38},
+            "template_strategy": {"primary": "beat_montage"},
+        }
+        plan = build_reel_plan(manifest, PlannerConfig())
+        self.assertEqual(plan["target_duration_seconds"], 58.0)
+        self.assertEqual(plan["actual_duration_seconds"], 58.0)
+        self.assertEqual(plan["summary"]["planned_shot_count"], 32)
+
+    def test_planner_consumes_music_duration_and_preserves_story_order(self):
+        manifest = fixture(20, videos=(0, 5, 10, 15))
+        manifest["creative_direction"] = {
+            "style": "beat_montage", "pacing": {"overall": "fast"},
+            "duration_strategy": {"resolved_seconds": 40.0},
+            "media_budget": {"minimum_shots": 15, "maximum_shots": 24},
+        }
+        manifest["music_analysis"] = {
+            "version": "1.0", "duration_seconds": 60.0,
+            "source": {"cache_key": "music-key"}, "tempo": {"bpm": 120},
+            "duration_alignment": {"music_aligned_duration": 42.0},
+            "beats": [{"time": value+.05} for value in range(2, 42, 2)],
+            "phrases": [{"start": 0.0, "end": 60.0}],
+            "sync_anchors": [], "story_mapping": [],
+        }
+        expected = [entry["media_id"] for entry in manifest["story"]["sequence"]]
+        plan = build_reel_plan(manifest, PlannerConfig())
+        self.assertEqual(plan["actual_duration_seconds"], 42.0)
+        self.assertEqual([shot["media_id"] for shot in plan["shots"]], expected)
+        self.assertEqual(plan["music_intelligence"]["cache_key"], "music-key")
+        self.assertLess(plan["music_intelligence"]["snapped_boundary_count"], len(plan["shots"])-1)
 
     def test_cli_prerequisite_behavior(self):
         self.assertIn("plan", build_parser().format_help())

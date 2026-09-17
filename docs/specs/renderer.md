@@ -1275,3 +1275,6 @@ Its contract is:
 The system should not build another video editor.
 
 It should turn the existing video engine into the reliable execution backend for AI-generated editorial decisions.
+# Music handoff
+
+When a duration-validated assembled music artifact is present, Renderer copies the planned video stream and muxes bounded AAC audio. Audio is trimmed to Plan duration and cannot extend the video. The existing silent path is unchanged when no assembled artifact exists.

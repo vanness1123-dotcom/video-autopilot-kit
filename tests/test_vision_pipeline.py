@@ -43,7 +43,11 @@ class VisionPipelineTests(unittest.TestCase):
             manifest_path = root / "output" / "trip_manifest.json"
             manifest = json.loads(manifest_path.read_text())
             original_id = manifest["photos"][0]["id"]
-            manifest["story"] = {"preserve": True}
+            manifest["photos"][0]["score"] = {"stale": True}
+            manifest.update(events={"stale": True}, creative_direction={"stale": True},
+                            selection={"stale": True}, story={"stale": True},
+                            reel_plan={"stale": True}, render={"stale": True},
+                            timeline={"unrelated": True})
             manifest_path.write_text(json.dumps(manifest))
 
             provider = FakeProvider()
@@ -53,7 +57,10 @@ class VisionPipelineTests(unittest.TestCase):
             persisted = json.loads(manifest_path.read_text())
             self.assertEqual(persisted["manifest_version"], "1.1")
             self.assertEqual(persisted["photos"][0]["id"], original_id)
-            self.assertEqual(persisted["story"], {"preserve": True})
+            self.assertNotIn("score", persisted["photos"][0])
+            for key in ("events", "creative_direction", "selection", "story", "reel_plan", "render"):
+                self.assertNotIn(key, persisted)
+            self.assertEqual(persisted["timeline"], {"unrelated": True})
             self.assertIn("vision", persisted["photos"][0])
 
             second = run_vision(root, config, provider)
@@ -82,6 +89,24 @@ class VisionPipelineTests(unittest.TestCase):
             persisted = json.loads(manifest_path.read_text())
             self.assertIn("vision", persisted["photos"][0])
             self.assertIn("vision_error", persisted["photos"][1])
+
+            recovery = FakeProvider()
+            progress: list[str] = []
+            retried = run_vision(root, VisionConfig(), recovery, progress.append)
+            self.assertEqual(retried["total"], 2)
+            self.assertEqual(retried["cached"], 1)
+            self.assertEqual(retried["skipped"], 1)
+            self.assertEqual(retried["retried"], 1)
+            self.assertEqual(retried["retry_processed"], 1)
+            self.assertEqual(retried["processed"], 1)
+            self.assertEqual(retried["recovered"], 1)
+            self.assertEqual(retried["failed"], 0)
+            self.assertEqual(recovery.calls, [failing_id])
+            self.assertTrue(progress[0].startswith("[1/2]"))
+            self.assertIn("cached=1", progress[0])
+            recovered_manifest = json.loads(manifest_path.read_text())
+            self.assertIn("vision", recovered_manifest["photos"][1])
+            self.assertNotIn("vision_error", recovered_manifest["photos"][1])
 
 
 if __name__ == "__main__":

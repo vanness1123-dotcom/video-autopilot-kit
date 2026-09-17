@@ -943,3 +943,126 @@ For AI Travel Reel Generator V1:
 `reel_plan.json` records what the renderer should execute.
 
 These responsibilities must remain distinct.
+# Creative Direction ownership
+
+`creative_direction` is additive Director-owned state. Events invalidate it and all downstream editorial state. Direction invalidates only Selection, media selection markers, Story, Reel Plan, and Render.
+# Adaptive Creative Direction fields
+
+`creative_direction.duration_strategy` additively persists mode, minimum/preferred/resolved/maximum
+seconds, flexibility, shared safe-shot bounds, and deterministic rationale codes. The media budget
+retains legacy shot keys and adds editorial/final targets plus the minimum quality threshold.
+
+`music_analysis` is optional and versioned. It contains immutable source/cache identity, detected
+audio facts, confidence-qualified musical inference, duration alignment, and Story mapping.
+Changing it invalidates only music-aware planning and rendering state.
+
+`music_selection` is optional, versioned Director/Story-dependent state. It records the deterministic
+selection profile, compact per-candidate sub-scores, selected track ID and score, rationale, top
+alternatives, and validation/errors. Full beat and energy arrays remain in the selected
+`music_analysis` and fingerprint cache rather than being duplicated. Recorded metadata readiness
+is not a legal conclusion. Upstream media understanding is not invalidated by a music change.
+# Music arrangement contract
+
+`music_selection` additively records strategy type/score, single and multi candidates, winner, alternatives, decision margin/reasons, and validation. `music_arrangement` is the canonical multi-track timing contract: exact segments, transitions, global sync anchors, feasibility, complexity penalty, and assembly status. `music_analysis` remains the backward-compatible canonical single-track analysis and is not used to impersonate a multi-track arrangement.
+
+# Visual template contracts
+
+Manifest version 1.8 additively permits `template_definition` and `visual_plan`. The definition records reusable presentation grammar. Visual Plan records exact duration, resolved blocks, shot ownership, event/phase mappings, normalized layers, semantic motion/transitions, design intent, beat metadata, and validation. A Reel Plan change removes both fields and Render; a template-only change removes Render without touching upstream artifacts.
+# Sprint 11.2a resolved layouts
+
+After `layout-plan`, every `visual_plan.blocks[]` contains an additive `resolved_layout` version 1.0. It records a deterministic strategy, normalized composition safe area, solid background token, overlap policy, and one traceable spatial slot for every shot already owned by that block. Layout regeneration preserves all upstream editorial and media-analysis state and invalidates only stale `render` state.
+# Sprint 11.2c canonical source dimensions
+
+Canonical `photos[]` and `videos[]` own optional `width`, `height`, and
+`orientation`. Width and height are positive integer DISPLAY-ORIENTED ORIGINAL
+SOURCE PIXEL DIMENSIONS, before resizing, cropping, layout fitting, or Vision
+preprocessing. Orientation is `portrait` when height > width, `landscape` when
+width > height, and `square` when equal. This previously reserved field is not
+an EXIF numeric tag. Layout retains its independent near-square aspect tolerance.
+
+Consumers resolve dimensions by `media_id`; Selection, Story, Reel Plan, and
+Visual Plan need no copies. Old records with absent/null fields remain valid;
+unrecoverable dimensions continue to use Layout's unknown fallback.
+
+Run `python -m travel_reel.cli enrich-media-metadata <trip_folder> --config configs/default.yaml`
+to enrich an existing manifest without Analyzer or Vision. The config argument
+is accepted for CLI consistency; extraction has no configurable policy.
+The command probes original sources and atomically persists changed facts.
+It preserves IDs, Vision/cache metadata, scores, Events, Creative Direction,
+Selection, Story, Music, Reel Plan, template definition, and semantic Visual Blocks.
+Only changed width/height invalidates `visual_plan.blocks[].resolved_layout`
+and removes `render` state. Existing output media files are not deleted; they
+must be regarded as stale. Template grouping does not depend on these dimensions,
+so run `layout-plan` explicitly afterward; `template-plan` is not required.
+
+Existing Reel Plan is preserved. A future explicit replan may produce different
+framing decisions after canonical dimensions become available.
+
+The command reports `known` (valid dimensions after enrichment), `enriched`
+(successfully changed records), `unchanged` (successful identical probes), and
+`failed` (per-record failures, with ID/path/reason). The last three counts partition
+attempted records; known may include failed probes with valid retained metadata.
+Failure never replaces valid metadata with null. An unchanged rerun does not
+write or invalidate newly resolved layouts/render state. Source bytes and Vision
+cache identity are unchanged. This is an additive optional contract, not a global
+mandatory-field or cache-version migration.
+# Sprint 11.3a additive Motion contract
+
+Manifest 1.10 adds optional `visual_plan.blocks[].resolved_motion` version 1.0.
+Tracks reference resolved slot IDs and carry block-normalized endpoint keyframes,
+never duplicated absolute timing or geometry. Existing dimension-less or motion-less
+records remain loadable. Motion planning requires valid resolved layouts and
+inherited layer visibility. See [Motion Engine](motion-engine.md) for the schema,
+controlled strategy vocabulary, transform order, and invalidation semantics.
+
+## Sprint 11.4b-a Typography foundation
+
+Overlay owns an internal Typography subsystem. `overlay-plan` preserves upstream
+contracts and optionally attaches `resolved_typography` version 1.0 to each text
+Overlay. `resolved_overlay` stays version 1.0; actual typography persistence advances
+Manifest to 1.12. Older records without typography remain valid. Font identity is
+SHA-256 plus collection face and logical ID, never an authoritative machine path.
+Whole-string cmap coverage precedes Pillow/FreeType single-line measurement.
+Preferred placement is not collision-certified; `validation.safe` does not imply
+full static/Motion collision safety. Font/content/profile/backend changes require
+re-resolution and invalidate render metadata when output changes. Renderer remains
+deferred. See [Overlay/Typography Engine](overlay-typography-engine.md).
+
+## Sprint 11.4b-b measured text layout
+
+Manifest 1.13 adds optional `resolved_typography.measured_layout` with policy
+`measured_lines.v1`. Overlay and Typography remain v1.0. The child owns display
+lines, fitted size, normalized baselines/boxes and container-fit evidence;
+legacy top-level single-line metrics retain their original meaning. Content stays
+unchanged. Bounded CJK/Latin wrapping, readable fitting, conservative ellipsis,
+and omission happen inside the existing preferred container. Media/Motion/Overlay
+collision safety and Renderer execution remain deferred. Old 1.12 records load
+and may be re-resolved using only `overlay-plan`. See the
+[typography specification](overlay-typography-engine.md).
+
+## Sprint 11.4b-c placement persistence
+
+Manifest 1.14 persists `resolved_overlay.version = "1.1"` and its required
+`placement_resolution.version = "1.0"`. Typography/Layout/Motion remain 1.0.
+The placement child records policy versions, canvas-normalized coordinates, the
+design canvas, a canonical dependency fingerprint, explicit geometric safety scope,
+and ordered preferred/alternate/omitted decisions. Source overlays remain editorial
+trace, including omissions. Only the decision-selected placement/Typography is
+renderable; preferred decisions reference existing fields, alternates embed their
+isolated candidate fields, and omitted decisions have no selected authority.
+Legacy 1.13/Overlay 1.0 loads without Placement. The approved overlay-plan stage
+upgrades deterministically, validates before atomic write, and invalidates only
+downstream render state. See the [authority contract](overlay-typography-engine.md).
+
+
+## Manifest 1.15: Overlay minimum-gap admission
+
+Overlay 1.2 requires both the unchanged `placement_resolution` 1.0 child and a
+`density_admission` child (version 1.0, policy `overlay_minimum_gap.v1`, fixed
+`minimum_gap_seconds: 0.5`). It records ordered admitted/suppressed/not_eligible
+source decisions and a full-reel dependency fingerprint. Density is post-Placement;
+it never changes source evidence, Placement decisions, visibility or upstream timing.
+Equality at the minimum gap passes. Final consumers use
+`overlay.final_eligible_overlay`, not Placement projection alone. Legacy Overlay
+1.0/1.1 loading remains supported. See the Overlay/Typography specification for
+exact numeric, validation, authority and migration semantics.

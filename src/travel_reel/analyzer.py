@@ -7,8 +7,10 @@ from pathlib import Path
 from typing import BinaryIO
 from uuid import NAMESPACE_URL, uuid5
 from .models import FolderSummary, GpsLocation, Photo, Trip, Video
+from .media_preprocess import extract_media_dimensions, VisionPreprocessError
+import warnings
 
-IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".heic", ".webp"}
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".heic", ".heif", ".webp"}
 VIDEO_EXTENSIONS = {".mp4", ".mov", ".m4v", ".avi"}
 DERIVED_DIRECTORY_NAMES = frozenset({".travel_reel_cache", "output"})
 _CONTAINERS = {b"moov", b"trak", b"mdia", b"minf", b"stbl", b"udta", b"meta"}
@@ -36,8 +38,13 @@ def analyze_trip_folder(trip_folder: Path) -> Trip:
         parent = relative_path.parent.as_posix() or "."
         size = path.stat().st_size; folders[parent][0 if kind == "photo" else 1] += 1; folders[parent][2] += size
         asset_id = f"{kind}-{uuid5(NAMESPACE_URL, f'{source_folder}/{relative_path.as_posix()}')}"
-        if kind == "photo": photos.append(Photo(asset_id, relative_path, path.name, capture_time=capture_time, gps=gps, size_bytes=size))
-        else: videos.append(Video(asset_id, relative_path, path.name, capture_time=capture_time, gps=gps, size_bytes=size))
+        dimensions = {}
+        try:
+            dimensions = extract_media_dimensions(path, kind)
+        except VisionPreprocessError as exc:
+            warnings.warn(str(exc), RuntimeWarning)
+        if kind == "photo": photos.append(Photo(asset_id, relative_path, path.name, capture_time=capture_time, gps=gps, size_bytes=size, **dimensions))
+        else: videos.append(Video(asset_id, relative_path, path.name, capture_time=capture_time, gps=gps, size_bytes=size, **dimensions))
     folder_structure = [FolderSummary(path, counts[0], counts[1], counts[2]) for path, counts in sorted(folders.items())]
     trip_id = f"trip-{uuid5(NAMESPACE_URL, str(source_folder))}"
     return Trip(trip_id, source_folder.name, source_folder, photos, videos, metadata={"generated_at": datetime.now(UTC), "folder_structure": folder_structure})

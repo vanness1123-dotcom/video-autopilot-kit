@@ -24,6 +24,7 @@ class StoryPipelineTests(unittest.TestCase):
             root = Path(directory); (root / "output").mkdir()
             payload = story_manifest(primary)
             payload["story"] = {"stale": True}
+            payload["reel_plan"] = {"stale": True}
             path = root / "output" / "trip_manifest.json"; path.write_text(json.dumps(payload))
             before_media = copy.deepcopy(payload["photos"]), copy.deepcopy(payload["videos"])
             before_selection = copy.deepcopy(payload["selection"])
@@ -33,7 +34,8 @@ class StoryPipelineTests(unittest.TestCase):
             self.assertEqual((persisted["photos"], persisted["videos"]), before_media)
             self.assertEqual(persisted["selection"], before_selection)
             self.assertEqual(persisted["timeline"], {"keep": True})
-            self.assertEqual(persisted["render"], {"keep": True})
+            self.assertNotIn("reel_plan", persisted)
+            self.assertNotIn("render", persisted)
             persisted["story"]["foreign_stale_field"] = True
             path.write_text(json.dumps(persisted))
             second = run_story(root, StoryConfig(min_story_items=2))

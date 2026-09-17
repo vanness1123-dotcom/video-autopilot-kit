@@ -13,7 +13,7 @@ class GpsLocation:
 
 @dataclass
 class Photo:
-    """A photo asset in a trip, with reserved future-enrichment fields."""
+    """Photo with original display-oriented pixels and portrait/landscape/square orientation."""
     id: str
     path: Path
     filename: str
@@ -34,7 +34,7 @@ class Photo:
 
 @dataclass
 class Video:
-    """A video asset in a trip, with reserved future-enrichment fields."""
+    """Video with original display-oriented pixels and portrait/landscape/square orientation."""
     id: str
     path: Path
     filename: str
@@ -148,6 +148,9 @@ class Trip:
             return {
                 "path": item.path.as_posix(),
                 "kind": kind,
+                "width": item.width,
+                "height": item.height,
+                "orientation": item.orientation,
                 "size_bytes": item.size_bytes,
                 "captured_at": item.capture_time.isoformat() if item.capture_time else None,
                 "gps": {

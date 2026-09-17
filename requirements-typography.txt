@@ -1,0 +1,4 @@
+# Narrow local typography dependency set; not a repository packaging migration.
+# Pillow was already installed. fontTools is the only newly approved dependency.
+Pillow==12.1.0
+fontTools==4.64.0

@@ -1179,3 +1179,11 @@ The Story Engine decides:
 The Reel Planner decides:
 
 > Exactly how do we fit that story into 40 seconds?
+# Sprint 8 strategy input
+
+Story uses the directed style and adaptive budget while retaining contiguous Event blocks. Pacing never justifies artificial Event fragmentation.
+# Macro sections
+
+Event-aware stories retain contiguous per-Event media blocks but group them beneath meaningful
+macro phases (`hook`, `arrival`, `exploration`, `experience`, `highlight`, `closing`). An Event is
+evidence inside the story arc, not automatically a top-level section.

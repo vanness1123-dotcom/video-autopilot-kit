@@ -63,13 +63,32 @@ class LocalVisionProviderTests(unittest.TestCase):
                 "urllib.request.urlopen",
                 side_effect=[_Response(invalid), _Response(valid)],
             ) as call:
-                result = LocalVisionProvider(retries=0).analyze_photo("photo-1", image)
+                provider = LocalVisionProvider(retries=0)
+                result = provider.analyze_photo("photo-1", image)
             self.assertEqual(result.travel_category, "street")
             self.assertEqual(call.call_count, 2)
             retry_body = json.loads(call.call_args_list[1].args[0].data)
-            self.assertEqual(retry_body["format"]["properties"]["tags"]["maxItems"], 16)
-            self.assertEqual(retry_body["format"]["properties"]["objects"]["maxItems"], 20)
-            self.assertIn("Never repeat list items", retry_body["messages"][0]["content"])
+            self.assertEqual(retry_body["format"]["properties"]["tags"]["maxItems"], 6)
+            self.assertEqual(retry_body["format"]["properties"]["objects"]["maxItems"], 8)
+            self.assertEqual(retry_body["options"]["num_predict"], 320)
+            self.assertIn("Never repeat items", retry_body["messages"][0]["content"])
+            self.assertTrue(provider.last_recovery_attempted)
+            self.assertTrue(provider.last_recovered)
+
+    def test_second_invalid_response_fails_without_infinite_retry(self) -> None:
+        with TemporaryDirectory() as directory:
+            image = Path(directory) / "frame.jpg"
+            image.write_bytes(b"jpeg")
+            invalid = {"done_reason": "length", "message": {"content": '{"tags": ['}}
+            with patch("urllib.request.urlopen", return_value=_Response(invalid)) as call:
+                provider = LocalVisionProvider(retries=0)
+                with self.assertRaisesRegex(
+                    VisionResponseValidationError, "exactly one retry"
+                ):
+                    provider.analyze_photo("photo-1", image)
+            self.assertEqual(call.call_count, 2)
+            self.assertTrue(provider.last_recovery_attempted)
+            self.assertFalse(provider.last_recovered)
 
     def test_non_object_structured_json_is_rejected_after_retry(self) -> None:
         with TemporaryDirectory() as directory:
@@ -79,6 +98,16 @@ class LocalVisionProviderTests(unittest.TestCase):
             with patch("urllib.request.urlopen", return_value=_Response(response)):
                 with self.assertRaisesRegex(VisionResponseValidationError, "must be an object"):
                     LocalVisionProvider(retries=0).analyze_photo("photo-1", image)
+
+    def test_incomplete_object_is_never_accepted(self) -> None:
+        with TemporaryDirectory() as directory:
+            image = Path(directory) / "frame.jpg"
+            image.write_bytes(b"jpeg")
+            response = {"done_reason": "stop", "message": {"content": '{"description":"x"}'}}
+            with patch("urllib.request.urlopen", return_value=_Response(response)) as call:
+                with self.assertRaisesRegex(VisionResponseValidationError, "required fields"):
+                    LocalVisionProvider(retries=0).analyze_photo("photo-1", image)
+            self.assertEqual(call.call_count, 2)
 
 
 if __name__ == "__main__":

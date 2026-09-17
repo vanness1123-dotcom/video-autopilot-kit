@@ -1008,3 +1008,6 @@ Its contract is:
 > Reduce the full trip library into a high-quality, diverse, representative and story-ready candidate set.
 
 Selection quality is measured not by whether every chosen item is individually perfect, but by whether the candidate set represents the trip well as a whole.
+# Sprint 8 strategy input
+
+Selection consumes the Director's feasible adaptive target, preferred mix intent, and per-Event representation targets while retaining diversity and near-duplicate suppression. It records unmet Event targets instead of selecting duplicates to satisfy a quota.

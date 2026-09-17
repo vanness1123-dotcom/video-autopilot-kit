@@ -1190,3 +1190,28 @@ The Reel Planner answers:
 The Rendering Engine answers:
 
 > How do we technically produce those shots and transitions?
+# Sprint 8 strategy input
+
+Planner derives effective shot bounds from Creative Direction and records pacing/template intent, while continuing to produce a deterministic cut-only 40-second plan. Exact timing remains Planner-owned; real beat synchronization and variable-density rendering are future work.
+# Adaptive timing
+
+When Creative Direction contains a resolved adaptive duration, Planner consumes it as the exact
+timeline target and consumes the paired shot bounds. The shared timing policy prevents the
+Director from intentionally emitting a duration outside known photo/video safety bounds.
+
+When Music Intelligence exists, its negotiated duration supersedes the editorial preference.
+Selected internal boundaries may move to nearby phrase/beat evidence only when both adjacent shot
+bounds remain valid. Plans persist the music cache identity and snap count for invalidation and QA.
+
+When `music-select` has chosen a library candidate, it publishes that candidate's cached analysis
+to the same `music_analysis` contract. Planner therefore needs no library lookup or manually copied
+path. Candidate changes invalidate Plan/Render; metadata-only ranking records do not alter media
+understanding. With no candidate, `music_analysis` is absent and adaptive no-music planning remains
+authoritative.
+# Arrangement timing
+
+Planner consumes the winning arrangement timeline, segments, transitions, and global sync anchors. Transition regions are explicit so important visual boundaries can avoid crossfade interiors. No-music and canonical single-track inputs remain supported.
+
+# Template boundary
+
+Reel Plan remains authoritative for shot identity, event/phase propagation, editorial timing, and duration. Template Resolver consumes it without mutation and distinguishes editorial shot timing from future visual layer timing. Visual Plan is not a Planner replacement.

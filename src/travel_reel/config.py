@@ -16,6 +16,36 @@ DEFAULT_SCORING_WEIGHTS = {
     "vertical_suitability": 0.10,
 }
 
+DIRECTOR_STYLES = {"auto", "cinematic_travel", "travel_story", "dynamic_travel_highlight", "beat_montage"}
+
+
+@dataclass(frozen=True)
+class CreativeDirectorConfig:
+    """Minimal user-facing policy for deterministic editorial direction."""
+
+    style: str = "auto"
+    duration_mode: str = "adaptive"
+    min_duration_seconds: float = 30.0
+    max_duration_seconds: float = 90.0
+    target_duration_seconds: float = 40.0
+    allow_photo_burst: bool = True
+    allow_beat_montage: bool = True
+    event_continuity: str = "strong"
+
+    def __post_init__(self) -> None:
+        if self.style not in DIRECTOR_STYLES:
+            raise ValueError(f"Unsupported Creative Director style: {self.style}")
+        if self.duration_mode not in {"adaptive", "fixed"}:
+            raise ValueError("Creative Director duration_mode must be adaptive or fixed")
+        if not 0 < self.min_duration_seconds <= self.max_duration_seconds:
+            raise ValueError("Creative Director duration envelope must satisfy 0 < min <= max")
+        if self.target_duration_seconds <= 0:
+            raise ValueError("Creative Director target duration must be positive")
+        if not isinstance(self.allow_photo_burst, bool) or not isinstance(self.allow_beat_montage, bool):
+            raise ValueError("Creative Director montage controls must be boolean")
+        if self.event_continuity not in {"moderate", "strong"}:
+            raise ValueError("Creative Director event_continuity must be moderate or strong")
+
 
 @dataclass(frozen=True)
 class VisionConfig:
@@ -140,6 +170,54 @@ class StoryConfig:
 
 
 @dataclass(frozen=True)
+class MusicConfig:
+    """Local audio normalization and heuristic analysis parameters."""
+
+    sample_rate: int = 22050
+    window_ms: int = 20
+    bpm_min: float = 60.0
+    bpm_max: float = 180.0
+    minimum_tempo_confidence: float = 0.12
+    cache_dir_name: str = ".travel_reel_cache/music"
+    library_path: str = "music_library"
+    selection_mode: str = "auto"
+    max_arrangement_tracks: int = 3
+    max_arrangement_pool: int = 8
+    crossfade_seconds: float = 0.5
+    max_crossfade_seconds: float = 2.0
+    multi_track_decision_margin: float = 3.0
+    track_switch_penalty: float = 3.0
+    arrangement_output_filename: str = "music_arrangement.m4a"
+    assembly_duration_tolerance_seconds: float = 0.12
+
+    def __post_init__(self) -> None:
+        if self.sample_rate < 8000 or not 10 <= self.window_ms <= 100:
+            raise ValueError("Invalid music sample rate or analysis window")
+        if not 30 <= self.bpm_min < self.bpm_max <= 300:
+            raise ValueError("Music BPM range must satisfy 30 <= min < max <= 300")
+        if not 0 <= self.minimum_tempo_confidence <= 1:
+            raise ValueError("Music confidence threshold must be within 0..1")
+        cache = Path(self.cache_dir_name)
+        if cache.is_absolute() or ".." in cache.parts:
+            raise ValueError("Music cache directory must be relative and contained")
+        library = Path(self.library_path)
+        if library.is_absolute() or ".." in library.parts:
+            raise ValueError("Music library path must be relative and contained")
+        if self.selection_mode != "auto":
+            raise ValueError("Music selection_mode currently supports only auto")
+        if not 1 <= self.max_arrangement_tracks <= 6 or self.max_arrangement_pool < self.max_arrangement_tracks:
+            raise ValueError("Music arrangement limits must satisfy 1 <= tracks <= pool")
+        if not 0 <= self.crossfade_seconds <= self.max_crossfade_seconds <= 5:
+            raise ValueError("Music crossfade must satisfy 0 <= default <= maximum <= 5")
+        if self.multi_track_decision_margin < 0 or self.track_switch_penalty < 0:
+            raise ValueError("Music strategy margin and switch penalty cannot be negative")
+        if Path(self.arrangement_output_filename).name != self.arrangement_output_filename:
+            raise ValueError("Music arrangement output must be one safe filename")
+        if self.assembly_duration_tolerance_seconds < 0:
+            raise ValueError("Music assembly duration tolerance cannot be negative")
+
+
+@dataclass(frozen=True)
 class PlannerConfig:
     """Deterministic editorial timing and renderer-intent policy."""
 
@@ -229,6 +307,66 @@ class RendererConfig:
             raise ValueError("Unsupported FFmpeg log level")
 
 
+@dataclass(frozen=True)
+class TemplateConfig:
+    """Small policy surface for rendering-independent visual planning."""
+    enabled: bool = True
+    default_template: str = "travel_daily_record_v1"
+    avoid_immediate_repeat: bool = True
+    max_complex_blocks_in_row: int = 2
+    motion_enabled: bool = True
+    typography_enabled: bool = True
+    decorations_enabled: bool = True
+
+    def __post_init__(self) -> None:
+        if self.default_template != "travel_daily_record_v1": raise ValueError("Unknown default template")
+        if not 0 <= self.max_complex_blocks_in_row <= 10: raise ValueError("Invalid complex-block repetition limit")
+        if not all(isinstance(x,bool) for x in (self.enabled,self.avoid_immediate_repeat,self.motion_enabled,
+                                               self.typography_enabled,self.decorations_enabled)):
+            raise ValueError("Template feature controls must be boolean")
+
+
+@dataclass(frozen=True)
+class LayoutConfig:
+    """Small policy surface for static renderer-independent layout resolution."""
+    enabled: bool = True
+    safe_area_margin: float = .04
+    default_background: str = "canvas_light"
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.enabled,bool): raise ValueError("Layout enabled must be boolean")
+        if not 0 <= self.safe_area_margin < .25: raise ValueError("Layout safe_area_margin must be within 0..0.25")
+        if self.default_background not in {"canvas_light","paper_white"}: raise ValueError("Unknown layout background token")
+
+
+@dataclass(frozen=True)
+class MotionConfig:
+    enabled: bool = True
+
+    def __post_init__(self):
+        if not isinstance(self.enabled, bool): raise ValueError("Motion enabled must be boolean")
+
+
+def load_motion_config(path: Path | None = None) -> MotionConfig:
+    value = _yaml_section_values(_config_text(path), "motion").get("enabled", "true")
+    if value.lower() not in {"true", "false"}: raise ValueError("Motion enabled must be true or false")
+    return MotionConfig(enabled=value.lower() == "true")
+
+
+def load_typography_config(path: Path | None = None):
+    from .typography import TypographyConfig, load_font_profile
+    values = _yaml_section_values(_config_text(path), "typography")
+    if set(values) - {"design_width", "design_height", "font_profile", "system_fonts"}:
+        raise ValueError("Unknown typography config field")
+    use_system = values.get("system_fonts", "true").lower()
+    if use_system not in {"true", "false"}: raise ValueError("Typography system_fonts must be true or false")
+    profile = values.get("font_profile")
+    fonts = load_font_profile((path or Path("configs/default.yaml")).resolve().parent / profile) if profile else ()
+    return TypographyConfig(design_width=int(values.get("design_width", 1080)),
+                            design_height=int(values.get("design_height", 1920)),
+                            user_fonts=fonts, system_fonts=use_system == "true")
+
+
 def load_vision_config(path: Path | None = None) -> VisionConfig:
     """Load the known `vision:` YAML keys without requiring PyYAML."""
     config = VisionConfig()
@@ -259,6 +397,19 @@ def load_scoring_config(path: Path | None = None) -> ScoringConfig:
     values = _yaml_section_values(_config_text(path), "scoring")
     known = DEFAULT_SCORING_WEIGHTS.keys()
     return ScoringConfig(**{key: float(values[key]) for key in known if key in values})
+
+
+def load_creative_director_config(path: Path | None = None) -> CreativeDirectorConfig:
+    values = _yaml_section_values(_config_text(path), "creative_director")
+    updates = {}
+    for key, value in values.items():
+        if key not in CreativeDirectorConfig.__dataclass_fields__: continue
+        if key in {"target_duration_seconds", "min_duration_seconds", "max_duration_seconds"}: updates[key] = float(value)
+        elif key in {"allow_photo_burst", "allow_beat_montage"}:
+            if str(value).lower() not in {"true", "false"}: raise ValueError(f"Creative Director {key} must be true or false")
+            updates[key] = str(value).lower() == "true"
+        else: updates[key] = value
+    return CreativeDirectorConfig(**updates)
 
 
 def load_selection_config(path: Path | None = None) -> SelectionConfig:
@@ -297,6 +448,19 @@ def load_story_config(path: Path | None = None) -> StoryConfig:
     return StoryConfig(**updates)
 
 
+def load_music_config(path: Path | None = None) -> MusicConfig:
+    values = _yaml_section_values(_config_text(path), "music")
+    updates = {}
+    for key, value in values.items():
+        if key not in MusicConfig.__dataclass_fields__: continue
+        if key in {"sample_rate", "window_ms", "max_arrangement_tracks", "max_arrangement_pool"}: updates[key] = int(value)
+        elif key in {"bpm_min", "bpm_max", "minimum_tempo_confidence", "crossfade_seconds",
+                     "max_crossfade_seconds", "multi_track_decision_margin", "track_switch_penalty",
+                     "assembly_duration_tolerance_seconds"}: updates[key] = float(value)
+        else: updates[key] = value
+    return MusicConfig(**updates)
+
+
 def load_planner_config(path: Path | None = None) -> PlannerConfig:
     """Load the dependency-free ``planner:`` section."""
     values = _yaml_section_values(_config_text(path), "planner")
@@ -327,6 +491,31 @@ def load_renderer_config(path: Path | None = None) -> RendererConfig:
         else:
             updates[key] = value
     return RendererConfig(**updates)
+
+
+def load_template_config(path: Path | None = None) -> TemplateConfig:
+    values = _yaml_section_values(_config_text(path), "template"); updates = {}
+    booleans={"enabled","avoid_immediate_repeat","motion_enabled","typography_enabled","decorations_enabled"}
+    for key,value in values.items():
+        if key not in TemplateConfig.__dataclass_fields__: continue
+        if key in booleans:
+            if value.lower() not in {"true","false"}: raise ValueError(f"Template {key} must be true or false")
+            updates[key]=value.lower()=="true"
+        elif key=="max_complex_blocks_in_row": updates[key]=int(value)
+        else: updates[key]=value
+    return TemplateConfig(**updates)
+
+
+def load_layout_config(path: Path | None = None) -> LayoutConfig:
+    values=_yaml_section_values(_config_text(path),"layout"); updates={}
+    for key,value in values.items():
+        if key not in LayoutConfig.__dataclass_fields__: continue
+        if key=="enabled":
+            if value.lower() not in {"true","false"}: raise ValueError("Layout enabled must be true or false")
+            updates[key]=value.lower()=="true"
+        elif key=="safe_area_margin": updates[key]=float(value)
+        else: updates[key]=value
+    return LayoutConfig(**updates)
 
 
 def _vision_yaml_values(text: str) -> dict[str, str]:

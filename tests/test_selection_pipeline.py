@@ -7,8 +7,8 @@ from tempfile import TemporaryDirectory
 from PIL import Image
 
 from travel_reel.cli import build_parser, main
-from travel_reel.config import ScoringConfig, SelectionConfig
-from travel_reel.pipeline import run_analysis, run_scoring, run_selection
+from travel_reel.config import CreativeDirectorConfig, EventConfig, ScoringConfig, SelectionConfig
+from travel_reel.pipeline import run_analysis, run_director, run_events, run_scoring, run_selection
 from travel_reel.vision import normalize_vision_result
 from test_vision import valid_payload
 
@@ -30,20 +30,22 @@ class SelectionPipelineTests(unittest.TestCase):
             payload["story"] = {"preserve": True}; payload["timeline"] = {"future": 1}; payload["render"] = {"future": 2}
             path.write_text(json.dumps(payload))
             scored = run_scoring(root, ScoringConfig())
+            run_events(root, EventConfig())
+            run_director(root, CreativeDirectorConfig())
             selected = run_selection(root, SelectionConfig(primary_target=1, alternate_target=1, min_video_target=0, max_video_target=0))
             persisted = json.loads(path.read_text())
             self.assertEqual(scored["scored"], 2)
-            self.assertEqual(len(selected["primary_ids"]), 1)
+            self.assertEqual(len(selected["primary_ids"]), 2)
             self.assertEqual([item["id"] for item in persisted["photos"]], ids)
-            self.assertEqual(persisted["manifest_version"], "1.2")
-            self.assertEqual(persisted["story"], {"preserve": True})
+            self.assertEqual(persisted["manifest_version"], "1.7")
+            self.assertNotIn("story", persisted)
             self.assertEqual(persisted["timeline"], {"future": 1})
-            self.assertEqual(persisted["render"], {"future": 2})
+            self.assertNotIn("render", persisted)
             self.assertTrue(all("vision" in item and "score" in item and "selection" in item for item in persisted["photos"]))
 
     def test_cli_help_and_missing_prerequisites(self):
         help_text = build_parser().format_help()
-        self.assertIn("score", help_text); self.assertIn("select", help_text)
+        self.assertIn("score", help_text); self.assertIn("direct", help_text); self.assertIn("select", help_text)
         with TemporaryDirectory() as directory:
             root = Path(directory)
             self.assertEqual(main(["score", str(root)]), 2)
